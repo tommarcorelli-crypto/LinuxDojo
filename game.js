@@ -10,10 +10,11 @@ function loadSave() {
     s.completed = new Set(s.completed || []);
     s.quizzes   = new Set(s.quizzes || []);
     if (!s.reviewCounts) s.reviewCounts = {};
+    if (!s.objectives)   s.objectives = [];
     return s;
   } catch { return defaultSave(); }
 }
-function defaultSave() { return { xp: 0, completed: new Set(), badges: [], quizzes: new Set(), reviewCounts: {} }; }
+function defaultSave() { return { xp: 0, completed: new Set(), badges: [], quizzes: new Set(), reviewCounts: {}, objectives: [] }; }
 function persist() {
   const s = { ...GAME, completed: [...GAME.completed], quizzes: [...GAME.quizzes] };
   localStorage.setItem(SAVE_KEY, JSON.stringify(s));
@@ -28,6 +29,7 @@ function bumpStat(cmd) {
   STATS.cmd[cmd] = (STATS.cmd[cmd] || 0) + 1;
   STATS.total++;
   localStorage.setItem(STATS_KEY, JSON.stringify(STATS));
+  if (typeof objectivesTick === "function") objectivesTick();
 }
 
 const BADGES = [
@@ -69,6 +71,7 @@ function addXP(amount) {
   persist();
   updateXPBar();
   checkBadges();
+  if (typeof checkObjectives === "function") checkObjectives();
   updateHomeStats();
   if (typeof updateNavRank === "function") updateNavRank();
   // Level up de rang ?
@@ -111,6 +114,7 @@ function showPage(id) {
   if (id === "sandbox"   && !sbInit) { initSandbox(); sbInit = true; }
   if (id === "glossary"  && typeof initGlossary === "function") { initGlossary(); }
   if (id === "home"      && typeof updateDailyBanner === "function") { updateDailyBanner(); }
+  if (id === "home"      && typeof objectivesTick === "function")    { objectivesTick(); }
 }
 
 let sbInit = false;
@@ -531,6 +535,7 @@ if (typeof applyTheme === "function") applyTheme(currentThemeId());
 updateXPBar();
 updateHomeStats();
 if (typeof updateNavRank === "function") updateNavRank();
+if (typeof objectivesTick === "function") objectivesTick();
 if (typeof initDailyModal === "function") initDailyModal();
 if (typeof updateDailyBanner === "function") updateDailyBanner();
 const dailyBtn = $("daily-banner-btn");

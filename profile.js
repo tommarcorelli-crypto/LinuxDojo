@@ -69,6 +69,19 @@ function renderProfile() {
     }
   }
 
+  // Série de défis quotidiens
+  const streakEl = document.getElementById("pf-streak");
+  if (streakEl && typeof dailyStreak === "function") {
+    const s = dailyStreak();
+    const b = (typeof dailyBest === "function") ? dailyBest() : 0;
+    if (s >= 1)      streakEl.textContent = "🔥 Série quotidienne : " + s + " j  ·  record " + b + " j";
+    else if (b >= 1) streakEl.textContent = "🔥 Série rompue  ·  record " + b + " j";
+    else             streakEl.textContent = "";
+  }
+
+  // Objectifs (débloque ceux atteints puis affiche la grille profil)
+  if (typeof objectivesTick === "function") objectivesTick();
+
   // Anneaux de progression par mode
   const rings = document.getElementById("pf-rings");
   if (rings) {

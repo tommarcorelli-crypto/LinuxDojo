@@ -6,7 +6,10 @@
   <meta name="theme-color" content="#080810">
   <meta name="description" content="LinuxDojo — Apprends Linux en jouant">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=8">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=8">
+  <link rel="shortcut icon" href="icons/icon-192.png?v=8">
+  <link rel="apple-touch-icon" href="icons/icon-192.png?v=8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="style.css">
   <title>LinuxDojo</title>
@@ -48,7 +51,7 @@
       <div class="daily-banner-left">
         <span class="daily-banner-icon">📅</span>
         <div>
-          <div class="daily-banner-title">Défi du jour <span id="daily-banner-status"></span></div>
+          <div class="daily-banner-title">Défi du jour <span id="daily-banner-status"></span> <span class="streak-chip" id="daily-banner-streak" style="display:none"></span></div>
           <div class="daily-banner-sub" id="daily-banner-sub">Résous le défi quotidien pour +50 XP bonus</div>
         </div>
       </div>
@@ -104,6 +107,15 @@
         <p>Ta progression, tes 8 rangs, tes badges et tes commandes préférées.</p>
         <div class="mode-tag">Rangs · Badges · Stats</div>
       </div>
+    </div>
+
+    <!-- ══ OBJECTIFS ══════════════════════════════════════════ -->
+    <div class="home-objectives" id="home-objectives">
+      <div class="home-obj-head">
+        <h2>🎯 Objectifs</h2>
+        <span class="obj-count" id="obj-count"></span>
+      </div>
+      <div class="obj-grid" id="obj-grid"></div>
     </div>
 
     <div class="home-stats-row" id="home-stats-row" style="display:none">
@@ -278,10 +290,14 @@
           <div class="profile-rank-sub" id="pf-sub">0 XP · Niveau 1</div>
           <div class="profile-rank-bar"><div class="profile-rank-fill" id="pf-rank-fill"></div></div>
           <div class="profile-rank-next" id="pf-next"></div>
+          <div class="profile-streak" id="pf-streak"></div>
         </div>
       </div>
 
       <div class="profile-rings" id="pf-rings"></div>
+
+      <div class="profile-section-title">🎯 Objectifs <span class="obj-count" id="pf-obj-count"></span></div>
+      <div class="obj-grid" id="pf-obj-grid"></div>
 
       <div class="profile-section-title">🏅 Badges</div>
       <div class="badges-grid" id="pf-badges"></div>
@@ -414,6 +430,7 @@
   <script src="glossary.js"></script>
   <script src="daily.js"></script>
   <script src="profile.js"></script>
+  <script src="objectives.js"></script>
   <script src="game.js"></script>
   <script src="sw-register.js"></script>
 </body>

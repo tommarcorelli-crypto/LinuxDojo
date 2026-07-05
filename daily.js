@@ -90,10 +90,11 @@ const DAILY_POOL = [
 
 const DAILY_KEY = "linuxdojo_daily";  // { date: "YYYY-MM-DD", done: false, idx: N }
 
-function _todayKey() {
-  const d = new Date();
+function _fmtKey(d) {
   return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 }
+function _todayKey() { return _fmtKey(new Date()); }
+function _yesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return _fmtKey(d); }
 function _dayIndex() {
   // Index déterministe basé sur le nombre de jours depuis 2020-01-01
   const d = new Date(); const ref = new Date(2020,0,1);
@@ -111,6 +112,15 @@ function dailyStatus() {
   return (st.date === today && st.done) ? "done" : "todo";
 }
 
+// Série en cours : nombre de jours consécutifs. 0 si la série est rompue
+// (dernier défi ni aujourd'hui ni hier).
+function dailyStreak() {
+  const st = _loadDaily();
+  if (st.date === _todayKey() || st.date === _yesterdayKey()) return st.streak || 0;
+  return 0;
+}
+function dailyBest() { return _loadDaily().best || 0; }
+
 function updateDailyBanner() {
   const status = dailyStatus();
   const badge = document.getElementById("daily-banner-status");
@@ -118,6 +128,14 @@ function updateDailyBanner() {
   const btn   = document.getElementById("daily-banner-btn");
   const dayName = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
   if (!badge || !sub || !btn) return;
+
+  // Puce de série 🔥
+  const streakChip = document.getElementById("daily-banner-streak");
+  if (streakChip) {
+    const s = dailyStreak();
+    if (s >= 2) { streakChip.style.display = ""; streakChip.textContent = "🔥 " + s + " j"; }
+    else { streakChip.style.display = "none"; }
+  }
   if (status === "done") {
     badge.textContent = " ✓";
     badge.style.color = "var(--green-li)";
@@ -140,7 +158,8 @@ function openDaily() {
   const today = _todayKey();
   const alreadyDone = state.date === today && state.done;
 
-  document.getElementById("daily-date").textContent = "📅 " + new Date().toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" });
+  const _s = dailyStreak();
+  document.getElementById("daily-date").textContent = "📅 " + new Date().toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" }) + (_s >= 2 ? "  ·  🔥 " + _s + " j" : "");
   document.getElementById("daily-reward").textContent = alreadyDone ? "✓ Terminé aujourd'hui" : "+50 XP bonus";
   document.getElementById("daily-title").textContent = ch.title;
   document.getElementById("daily-desc").innerHTML = ch.desc + (alreadyDone ? '<br><span style="color:var(--green-li);font-size:12px">Tu peux le refaire pour t\'entraîner (sans récompense).</span>' : "");
@@ -192,13 +211,21 @@ function _dailyRun() {
   const first = !(state.date === today && state.done);
 
   if (first) {
-    _saveDaily({ date: today, done: true, idx });
-    if (typeof addXP === "function") addXP(50);
+    // Mise à jour de la série : +1 si le dernier défi datait d'hier, sinon on repart à 1
+    const streak = (state.date === _yesterdayKey()) ? (state.streak || 0) + 1 : 1;
+    const best   = Math.max(state.best || 0, streak);
+    _saveDaily({ date: today, done: true, idx, streak, best });
+
+    const streakBonus = Math.min((streak - 1) * 5, 50);   // +5 XP/jour de série, plafonné à +50
+    const gain = 50 + streakBonus;
+    if (typeof addXP === "function") addXP(gain);
     if (typeof SFX !== "undefined") SFX.success();
     if (typeof burstParticles === "function") burstParticles(window.innerWidth/2, window.innerHeight*0.35);
-    _dailyTerm.printOk("✅ Défi du jour réussi ! +50 XP bonus");
-    document.getElementById("daily-status").innerHTML = '<div class="daily-success">🎉 Bravo ! Reviens demain pour un nouveau défi.</div>';
-    if (typeof showAchievement === "function") showAchievement("📅", "Défi du jour", "Bonus quotidien débloqué !");
+    _dailyTerm.printOk("✅ Défi du jour réussi ! +" + gain + " XP" + (streakBonus ? "  (série 🔥" + streak + " → +" + streakBonus + " bonus)" : " bonus"));
+    document.getElementById("daily-status").innerHTML =
+      '<div class="daily-success">🎉 Bravo ! ' + (streak >= 2 ? "Série de 🔥" + streak + " jours ! " : "") + 'Reviens demain pour la continuer.</div>';
+    if (typeof showAchievement === "function")
+      showAchievement(streak >= 2 ? "🔥" : "📅", streak >= 2 ? "Série de " + streak + " jours" : "Défi du jour", "+" + gain + " XP");
     updateDailyBanner();
   } else {
     _dailyTerm.printOk("✅ Correct ! (déjà validé aujourd'hui)");
