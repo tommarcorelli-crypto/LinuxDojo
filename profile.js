@@ -135,6 +135,7 @@ function renderProfile() {
   renderStats();
   renderHeatmap();
   renderThemes();
+  if (typeof renderCertificate === "function") renderCertificate();
 }
 
 /* ── Heatmap d'activité (style GitHub, 12 semaines) ────────── */
@@ -211,8 +212,10 @@ function importSave() {
 (() => {
   const ex = document.getElementById("pf-export");
   const im = document.getElementById("pf-import");
+  const nm = document.getElementById("pf-name");
   if (ex) ex.addEventListener("click", exportSave);
   if (im) im.addEventListener("click", importSave);
+  if (nm && typeof setNinjaName === "function") nm.addEventListener("click", setNinjaName);
 })();
 
 function updateNavRank() {

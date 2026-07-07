@@ -8,6 +8,7 @@ function _obLS(key, fallback) {
 }
 function _banditDone()    { const a = _obLS("linuxdojo_bandit", []); return Array.isArray(a) ? a.length : 0; }
 function _bossDone()      { const b = _obLS("linuxdojo_boss", {}); return (b && Array.isArray(b.defeated)) ? b.defeated.length : 0; }
+function _kataBestScore() { const k = _obLS("linuxdojo_kata_best", {}); let m = 0; for (const id in k) if (k[id] && k[id].score > m) m = k[id].score; return m; }
 function _challengeBest() { const n = parseInt(localStorage.getItem("linuxdojo_challenge_best"), 10); return isNaN(n) ? 0 : n; }
 function _dailyDone()     { const d = _obLS("linuxdojo_daily", {}); return d && d.done ? 1 : 0; }
 function _statTotal()     { return (typeof STATS !== "undefined" && STATS.total) ? STATS.total : 0; }
@@ -32,6 +33,7 @@ const OBJECTIVES = [
   { id: "bossall",   icon: "🐲", title: "Videur de donjon",    desc: "Terrasse les 5 boss (Sensei inclus)",        xp: 100, target: 5,  cur: () => _bossDone() },
   { id: "rtfm",      icon: "📖", title: "RTFM",                desc: "Consulte 3 pages de manuel (man cmd)",       xp: 20, target: 3,   cur: () => _statCmd("man") },
   { id: "eggs",      icon: "🥚", title: "Chasseur d'œufs",     desc: "Trouve 3 easter eggs (cowsay, sl, fortune…)", xp: 30, target: 3,  cur: () => ["cowsay","sl","fortune","vim","sudo"].filter(c => _statCmd(c) > 0).length },
+  { id: "kata",      icon: "🥋", title: "Mémoire musculaire",  desc: "Atteins 70 pts de score sur un Kata",         xp: 35, target: 70,  cur: () => _kataBestScore() },
 ];
 
 // ── Vérifie & débloque automatiquement les objectifs atteints ────────────────

@@ -126,6 +126,7 @@ function showPage(id) {
   if (id === "challenge" && !chInitialized) { initChallenges(); chInitialized = true; }
   if (id === "bandit"    && !bnInitialized) { initBandit();     bnInitialized = true; }
   if (id === "boss") { if (!bsInitialized) { initBoss(); bsInitialized = true; } else if (bsObj) { bsObj.renderList(); } }
+  if (id === "kata") { if (!ktInitialized) { initKata(); ktInitialized = true; } else if (ktObj) { ktObj.renderSelect(); } }
   if (id === "learn"     && !learnInit)     { initLearn();      learnInit = true; }
   if (id === "profile"   && typeof renderProfile === "function") { renderProfile(); }
   if (id === "sandbox"   && !sbInit) { initSandbox(); sbInit = true; }
@@ -136,7 +137,7 @@ function showPage(id) {
 
 let sbInit = false;
 
-let gsInitialized = false, chInitialized = false, bnInitialized = false, learnInit = false, bsInitialized = false;
+let gsInitialized = false, chInitialized = false, bnInitialized = false, learnInit = false, bsInitialized = false, ktInitialized = false;
 
 document.querySelectorAll(".nav-btn[data-page]").forEach(btn => {
   btn.addEventListener("click", () => showPage(btn.dataset.page));
@@ -425,6 +426,13 @@ function initBoss() {
     fleeBtn:$("boss-flee"),
   });
   bsObj.init();
+}
+
+// MODE KATA
+let ktObj = null;
+function initKata() {
+  ktObj = new KataMode($("kata-body"));
+  ktObj.init();
 }
 
 // MODE BANDIT

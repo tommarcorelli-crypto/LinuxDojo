@@ -30,6 +30,7 @@
       <button class="nav-btn" data-page="challenge">Défis</button>
       <button class="nav-btn" data-page="bandit">Infiltration</button>
       <button class="nav-btn nav-btn-boss" data-page="boss">⚔️ Boss</button>
+      <button class="nav-btn" data-page="kata">🥋 Kata</button>
       <button class="nav-btn" data-page="sandbox">Bac à sable</button>
       <button class="nav-btn" data-page="glossary">Glossaire</button>
       <button class="nav-btn" data-page="profile">Profil</button>
@@ -101,6 +102,12 @@
         <h3>Salle des Boss</h3>
         <p>Affronte le Kraken, le Spectre, l'Hydre, le Golem… et le Sensei. HP, cœurs, chrono.</p>
         <div class="mode-tag">5 boss · Ceinture Noire</div>
+      </div>
+      <div class="mode-card" data-page="kata">
+        <div class="mode-icon">🥋</div>
+        <h3>Kata</h3>
+        <p>La mémoire musculaire du shell : tape des enchaînements de commandes au chrono. WPM & précision.</p>
+        <div class="mode-tag">6 katas · Vitesse & record</div>
       </div>
       <div class="mode-card" data-page="sandbox">
         <div class="mode-icon">🧪</div>
@@ -334,6 +341,11 @@
     </div>
   </div>
 
+  <!-- ══ PAGE KATA (dactylo) ═════════════════════════════════ -->
+  <div id="page-kata" class="page">
+    <div id="kata-body"></div>
+  </div>
+
   <!-- ══ PAGE PROFIL ═════════════════════════════════════════ -->
   <div id="page-profile" class="page">
     <div id="profile-wrap">
@@ -349,6 +361,9 @@
       </div>
 
       <div class="profile-rings" id="pf-rings"></div>
+
+      <div class="profile-section-title">🖤 Certificat de Ceinture Noire</div>
+      <div id="pf-cert"></div>
 
       <div class="profile-section-title">🎯 Objectifs <span class="obj-count" id="pf-obj-count"></span></div>
       <div class="obj-grid" id="pf-obj-grid"></div>
@@ -368,6 +383,7 @@
       <div class="profile-section-title">⚙️ Options</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn-ghost" id="pf-sound">🔊 Son : ON</button>
+        <button class="btn-ghost" id="pf-name">🥷 Mon nom de ninja</button>
         <button class="btn-ghost" id="pf-export">📤 Exporter la sauvegarde</button>
         <button class="btn-ghost" id="pf-import">📥 Importer</button>
         <button class="btn-ghost" id="pf-reset">↺ Réinitialiser la progression</button>
@@ -486,6 +502,8 @@
   <script src="challenges.js"></script>
   <script src="bandit.js"></script>
   <script src="boss.js"></script>
+  <script src="kata.js"></script>
+  <script src="certificate.js"></script>
   <script src="quizzes.js"></script>
   <script src="glossary.js"></script>
   <script src="daily.js"></script>

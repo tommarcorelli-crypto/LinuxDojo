@@ -567,6 +567,15 @@ class BossMode {
     if (typeof showAchievement === "function") {
       showAchievement(b.emoji, b.name + " vaincu !", first ? "+" + b.xp + " XP" : "Encore vaincu. Impitoyable.");
     }
+    // Ceinture Noire : le Sensei délivre le certificat
+    if (b.id === "sensei") {
+      this.term.printOut("");
+      this.term.printOk("🖤 CEINTURE NOIRE OBTENUE — ton certificat t'attend dans le Profil !");
+      setTimeout(() => {
+        if (typeof showToast === "function") showToast("🖤 Certificat de Ceinture Noire débloqué → Profil");
+        if (typeof renderCertificate === "function") renderCertificate();
+      }, 1400);
+    }
     if (typeof burstParticles === "function") {
       burstParticles(window.innerWidth/2, window.innerHeight/2);
       setTimeout(() => burstParticles(window.innerWidth/3, window.innerHeight/3), 250);
