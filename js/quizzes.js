@@ -43,6 +43,12 @@ const QUIZZES = {
     { q: "À quoi sert « -m » dans git commit -m \"...\" ?", options: ["Mode silencieux", "Le message du commit", "Merge automatique", "Nombre de fichiers"], answer: 1 },
     { q: "Quelle commande crée une branche ET bascule dessus en une fois ?", options: ["git branch -b nom", "git switch nom", "git checkout -b nom", "git new nom"], answer: 2 },
   ],
+  9: [
+    { q: "Quelle commande permet de se connecter à distance à un serveur ?", options: ["remote", "ssh utilisateur@hôte", "connect hôte", "distant hôte"], answer: 1 },
+    { q: "Comment revenir sur sa machine locale après une connexion SSH ?", options: ["quit", "back", "exit", "stop"], answer: 2 },
+    { q: "Quelle commande envoie un fichier vers un serveur distant ?", options: ["send", "scp fichier user@hôte:/chemin", "push fichier", "upload fichier"], answer: 1 },
+    { q: "Que signifie « LISTEN » dans la sortie de netstat ?", options: ["Le service a planté", "Le service attend des connexions sur ce port", "Le port est fermé", "Le service est en pause"], answer: 1 },
+  ],
 };
 
 const Quiz = {

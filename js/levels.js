@@ -1511,6 +1511,170 @@ const CHAPTERS = [
         explanation: "Tu maîtrises maintenant le cycle Git de base — celui que des millions de développeurs utilisent chaque jour, de la plus petite startup aux plus gros projets open source. Prochaine étape naturelle une fois sur le terrain : <code>git push</code> vers un dépôt distant comme GitHub, pour partager ton travail avec une équipe. 🌱"
       }
     ]
+  },
+
+  // ════════════════════════════════════════════════════════════
+  {
+    id: 9,
+    title: "🌐 Scénario 9 — Réseau & administration distante",
+    scenario: "Le projet tourne maintenant sur de vrais serveurs, pas seulement en local. Il est temps d'apprendre à se connecter à distance, transférer des fichiers en toute sécurité, et diagnostiquer un serveur sans jamais y avoir mis les pieds physiquement.",
+    missions: [
+
+      {
+        id: 49,
+        name: "Étape 1 — Se connecter en SSH",
+        cmd: "ssh utilisateur@hôte",
+        xp: 40,
+        lesson: {
+          title: "<code>ssh</code> — Se connecter à une machine distante",
+          intro: "SSH (Secure Shell) est LE protocole pour administrer un serveur à distance, de façon chiffrée. Une fois connecté, ton terminal ne contrôle plus ta machine : il contrôle le serveur distant. Le prompt change pour te le rappeler en permanence.",
+          syntax: "ssh utilisateur@hôte",
+          options: [
+            { flag: "ssh admin@serveur", desc: "Se connecte en tant qu'admin sur 'serveur'" },
+            { flag: "exit",              desc: "Se déconnecter et revenir en local" },
+          ],
+          examples: [
+            { cmd: "ssh admin@webserver01", comment: "# connexion au serveur web" },
+          ],
+          tip: "Regarde bien le prompt après connexion : `admin@webserver01` au lieu de `user@dojo` — c'est ton seul indice visuel que tu es maintenant AILLEURS."
+        },
+        desc: "Connecte-toi en SSH au serveur <code>webserver01</code> avec l'utilisateur <code>admin</code>.",
+        fs: {},
+        hint: "ssh admin@webserver01",
+        check: (out, s) => s.sshHost === "webserver01" && s.sshUser === "admin",
+        explanation: "Te voilà connecté à distance. Sur un vrai serveur, absolument tout ce que tu tapes maintenant s'exécute LÀ-BAS, pas sur ta machine — c'est puissant, et ça peut faire mal si on n'y fait pas attention."
+      },
+
+      {
+        id: 50,
+        name: "Étape 2 — Inspecter les services actifs",
+        cmd: "netstat",
+        xp: 40,
+        lesson: {
+          title: "<code>netstat</code> — Voir ce qui écoute sur le réseau",
+          intro: "Une fois sur un serveur, une des premières questions à se poser : quels services tournent, et sur quels ports ? <code>netstat</code> (ou son équivalent moderne <code>ss</code>) répond à ça — indispensable pour diagnostiquer ou sécuriser une machine.",
+          syntax: "netstat",
+          options: [
+            { flag: "LISTEN", desc: "Le service attend activement des connexions sur ce port" },
+            { flag: ":22",    desc: "Port SSH, ouvert pour l'administration distante" },
+            { flag: ":80/:443", desc: "Ports web (HTTP / HTTPS)" },
+          ],
+          examples: [
+            { cmd: "ssh admin@webserver01", comment: "# se connecter d'abord" },
+            { cmd: "netstat",               comment: "# lister les services en écoute" },
+          ],
+          tip: "Un service qui écoute sur un port que tu ne reconnais pas est souvent le premier signe d'un serveur compromis. Réflexe à avoir."
+        },
+        desc: "Connecte-toi à <code>webserver01</code>, puis liste les services en écoute avec <code>netstat</code>.",
+        fs: {},
+        hint: "ssh admin@webserver01 && netstat",
+        check: (out) => /listen/.test(out),
+        explanation: "Tu sais maintenant lire l'activité réseau d'un serveur d'un coup d'œil : sshd sur 22, nginx sur 80/443, mysqld sur 3306... chaque ligne te dit quel service tourne et où."
+      },
+
+      {
+        id: 51,
+        name: "Étape 3 — Transférer un fichier (scp)",
+        cmd: "scp fichier user@hôte:/chemin",
+        xp: 45,
+        lesson: {
+          title: "<code>scp</code> — Copier un fichier vers un serveur distant",
+          intro: "Comment déposer un fichier sur un serveur sans interface graphique ni FTP ? <code>scp</code> (secure copy) copie un fichier via le même chiffrement que SSH, en une seule commande, sans jamais avoir besoin de s'y connecter au préalable.",
+          syntax: "scp fichier utilisateur@hôte:/chemin/destination",
+          options: [
+            { flag: "fichier",        desc: "Le fichier local à envoyer" },
+            { flag: "user@hôte:/chemin", desc: "Où l'envoyer sur la machine distante" },
+          ],
+          examples: [
+            { cmd: "scp deploy.sh admin@webserver01:/var/www", comment: "# envoyer un script sur le serveur" },
+          ],
+          tip: "`scp` se tape depuis TA machine, avant de te connecter — pas besoin d'ouvrir une session SSH pour transférer un fichier."
+        },
+        desc: "Envoie le fichier <code>deploy.sh</code> vers <code>/var/www</code> sur le serveur <code>webserver01</code>, utilisateur <code>admin</code>.",
+        fs: {
+          "deploy.sh": { type: "file", content: "echo déploiement en cours..." },
+        },
+        hint: "scp deploy.sh admin@webserver01:/var/www",
+        check: (out, s) => !!s.scp && s.scp.file === "deploy.sh" && s.scp.host === "webserver01",
+        explanation: "Fichier envoyé, chiffré de bout en bout. Ce réflexe (envoyer d'abord, se connecter ensuite pour vérifier) est exactement le workflow qu'utilisent les admins système au quotidien pour déployer sans interface graphique."
+      },
+
+      {
+        id: 52,
+        name: "Étape 4 — Se déconnecter proprement",
+        cmd: "exit",
+        xp: 35,
+        lesson: {
+          title: "<code>exit</code> en SSH — Revenir sur sa machine",
+          intro: "Rester connecté à un serveur qu'on n'utilise plus est une mauvaise pratique (risque de sécurité, session oubliée ouverte). <code>exit</code> ferme la connexion SSH et te ramène sur ta machine locale — le prompt redevient celui du dojo.",
+          syntax: "exit",
+          options: [],
+          examples: [
+            { cmd: "ssh admin@webserver01", comment: "# connexion" },
+            { cmd: "exit",                   comment: "# déconnexion propre" },
+          ],
+          tip: "Vérifie toujours ton prompt avant de taper une commande destructrice : si tu es encore connecté à un serveur, ce n'est PAS ta machine que tu vas modifier."
+        },
+        desc: "Connecte-toi à <code>webserver01</code> en tant qu'<code>admin</code>, puis déconnecte-toi proprement.",
+        fs: {},
+        hint: "ssh admin@webserver01 && exit",
+        check: (out, s) => s.sshExit === "webserver01",
+        explanation: "Retour à la maison, propre et net. Ce réflexe simple évite bien des sessions fantômes oubliées ouvertes sur des serveurs de production — un vrai risque de sécurité si quelqu'un d'autre s'assoit devant ton clavier."
+      },
+
+      {
+        id: 53,
+        name: "Étape 5 — Vérifier avant de se connecter",
+        cmd: "ping puis ssh",
+        xp: 40,
+        lesson: {
+          title: "Diagnostiquer avant d'agir : <code>ping</code> + <code>ssh</code>",
+          intro: "Avant de perdre du temps à essayer de se connecter à un serveur, un bon réflexe d'admin : vérifier qu'il répond sur le réseau. <code>ping</code> confirme que la machine est joignable avant même de tenter une connexion SSH.",
+          syntax: "ping hôte   puis   ssh utilisateur@hôte",
+          options: [
+            { flag: "ping hôte", desc: "Vérifie que la machine répond sur le réseau" },
+            { flag: "0% perte de paquets", desc: "Bon signe : la machine est bien joignable" },
+          ],
+          examples: [
+            { cmd: "ping webserver01",       comment: "# vérifier d'abord" },
+            { cmd: "ssh admin@webserver01",  comment: "# se connecter ensuite" },
+          ],
+          tip: "Sur un vrai réseau d'entreprise, un ping qui ne répond pas peut vouloir dire : machine éteinte, pare-feu qui bloque, ou mauvaise adresse — ça évite de chercher un bug ailleurs pour rien."
+        },
+        desc: "Vérifie que <code>dbserver02</code> répond avec <code>ping</code>, puis connecte-toi dessus en tant qu'utilisateur <code>root</code>.",
+        fs: {},
+        hint: "ping dbserver02 && ssh root@dbserver02",
+        check: (out, s) => s.sshHost === "dbserver02" && s.sshUser === "root",
+        explanation: "Diagnostiquer avant d'agir : ce réflexe simple (vérifier qu'un serveur est joignable avant de s'acharner dessus) fait gagner un temps fou en situation réelle d'incident, où chaque minute compte."
+      },
+
+      {
+        id: 54,
+        name: "Étape 6 — Le workflow complet d'un déploiement",
+        cmd: "scp → ssh → netstat → exit",
+        xp: 75,
+        lesson: {
+          title: "Le <code>workflow réseau</code> complet, de bout en bout",
+          intro: "En situation réelle, tu enchaînes : envoyer le fichier nécessaire (<code>scp</code>), se connecter pour vérifier que tout est en ordre (<code>ssh</code> puis <code>netstat</code>), puis repartir proprement (<code>exit</code>). C'est exactement le cycle qu'utilise un admin système pour un déploiement manuel.",
+          syntax: "scp → ssh → netstat → exit",
+          options: [],
+          examples: [
+            { cmd: "scp backup.sql root@dbserver02:/backups", comment: "# 1. envoyer le fichier" },
+            { cmd: "ssh root@dbserver02",                       comment: "# 2. se connecter pour vérifier" },
+            { cmd: "netstat",                                    comment: "# 3. vérifier les services actifs" },
+            { cmd: "exit",                                       comment: "# 4. repartir proprement" },
+          ],
+          tip: "Ce cycle scp → ssh → vérification → exit est LE workflow de base de l'administration système distante. Tu viens de le faire de bout en bout."
+        },
+        desc: "Envoie <code>backup.sql</code> vers <code>/backups</code> sur <code>dbserver02</code> (utilisateur <code>root</code>), connecte-toi pour vérifier les services actifs, puis déconnecte-toi.",
+        fs: {
+          "backup.sql": { type: "file", content: "-- dump SQL de sauvegarde" },
+        },
+        hint: "scp backup.sql root@dbserver02:/backups && ssh root@dbserver02 && netstat && exit",
+        check: (out, s) => !!s.scp && s.scp.file === "backup.sql" && s.scp.host === "dbserver02" && s.sshExit === "dbserver02",
+        explanation: "Tu viens de dérouler un vrai cycle d'administration distante, du transfert de fichier jusqu'à la déconnexion propre. Ajoute la maîtrise de Git du scénario précédent, et tu as les bases exactes du quotidien d'un admin système ou d'un développeur backend. 🌐"
+      }
+    ]
   }
 ];
 

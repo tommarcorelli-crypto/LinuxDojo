@@ -343,6 +343,60 @@ test("cmd & crée un job listé par jobs, puis récupérable par fg", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+// RÉSEAU : ssh, scp, netstat
+// ═══════════════════════════════════════════════════════════════════════
+
+test("ssh change le prompt et expose l'hôte/utilisateur dans le state", () => {
+  const t = makeTerm({});
+  const r = t.run("ssh admin@webserver01");
+  assertEqual(r.error, false);
+  assertEqual(t.state.sshHost, "webserver01");
+  assertEqual(t.state.sshUser, "admin");
+  assertIncludes(t.promptStr(), "admin@webserver01");
+});
+
+test("ssh refuse un format invalide (pas de user@hôte)", () => {
+  const t = makeTerm({});
+  const r = t.run("ssh webserver01");
+  assertEqual(r.error, true);
+});
+
+test("netstat liste des services en LISTEN", () => {
+  const t = makeTerm({});
+  const r = t.run("netstat");
+  assertMatches(r.output, /LISTEN/);
+});
+
+test("scp échoue si le fichier source n'existe pas", () => {
+  const t = makeTerm({});
+  const r = t.run("scp absent.txt admin@webserver01:/var/www");
+  assertEqual(r.error, true);
+});
+
+test("scp réussit et enregistre fichier/hôte/chemin dans le state", () => {
+  const t = makeTerm({ "deploy.sh": { type: "file", content: "echo hi" } });
+  t.run("scp deploy.sh admin@webserver01:/var/www");
+  assertEqual(t.state.scp.file, "deploy.sh");
+  assertEqual(t.state.scp.host, "webserver01");
+});
+
+test("exit en SSH déconnecte et restaure le prompt local", () => {
+  const t = makeTerm({});
+  t.run("ssh admin@webserver01");
+  assertIncludes(t.promptStr(), "webserver01");
+  const r = t.run("exit");
+  assertIncludes(r.output.toLowerCase(), "fermée");
+  assertEqual(t.state.sshExit, "webserver01");
+  assert(!t.promptStr().includes("webserver01"), "le prompt doit être revenu en local");
+});
+
+test("exit hors SSH garde l'ancien easter egg (pas de fausse déconnexion)", () => {
+  const t = makeTerm({});
+  const r = t.run("exit");
+  assertIncludes(r.output.toLowerCase(), "dojo");
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 // GIT (simulation)
 // ═══════════════════════════════════════════════════════════════════════
 

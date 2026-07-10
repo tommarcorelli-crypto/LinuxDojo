@@ -34,6 +34,7 @@ class Terminal {
     this._jobs = [];    // jobs lancés en arrière-plan (cmd &)
     this._jobCounter = 0;
     this._git = null;   // dépôt git simulé (null tant que 'git init' n'a pas été fait)
+    this._sshStack = []; // pile des prompts précédents avant chaque 'ssh' (pour 'exit')
   }
 
   // Charge le filesystem d'une mission.
@@ -63,6 +64,7 @@ class Terminal {
     this._jobs = [];
     this._jobCounter = 0;
     this._git = null;
+    this._sshStack = [];
   }
 
   /* ── Chemins ───────────────────────────────────────────────── */
@@ -223,7 +225,7 @@ class Terminal {
     }
 
     // Commandes connues proches
-    const known = ["ls","cd","cat","less","more","pwd","mkdir","touch","cp","mv","rm","chmod","chown","chgrp","grep","find","wc","sort","echo","ps","kill","whoami","id","df","ln","tar","curl","sed","awk","clear","help","head","tail","uniq","cut","tr","tree","du","date","uname","hostname","uptime","free","history","man","whatis","env","ping","alias","unalias","xargs","diff","jobs","fg","git"];
+    const known = ["ls","cd","cat","less","more","pwd","mkdir","touch","cp","mv","rm","chmod","chown","chgrp","grep","find","wc","sort","echo","ps","kill","whoami","id","df","ln","tar","curl","sed","awk","clear","help","head","tail","uniq","cut","tr","tree","du","date","uname","hostname","uptime","free","history","man","whatis","env","ping","alias","unalias","xargs","diff","jobs","fg","git","ssh","scp","netstat"];
     const close = known.find(k => this._levenshtein(cmd, k) <= 2);
     if (close) {
       return `${cmd}: commande introuvable\n💡 Voulais-tu dire : ${close} ?`;
@@ -253,7 +255,7 @@ class Terminal {
 
     // Complétion de commande (premier mot)
     if (parts.length === 1) {
-      const cmds = ["ls","cd","cat","less","more","pwd","mkdir","touch","cp","mv","rm","chmod","chown","chgrp","grep","find","wc","sort","echo","ps","kill","whoami","id","df","ln","tar","curl","sed","awk","clear","help","head","tail","uniq","cut","tr","tree","du","date","uname","hostname","uptime","free","history","man","whatis","env","export","ping","base64","rot13","xxd","for","while","if","test","seq","bash","true","false","alias","unalias","xargs","diff","jobs","fg","git"];
+      const cmds = ["ls","cd","cat","less","more","pwd","mkdir","touch","cp","mv","rm","chmod","chown","chgrp","grep","find","wc","sort","echo","ps","kill","whoami","id","df","ln","tar","curl","sed","awk","clear","help","head","tail","uniq","cut","tr","tree","du","date","uname","hostname","uptime","free","history","man","whatis","env","export","ping","base64","rot13","xxd","for","while","if","test","seq","bash","true","false","alias","unalias","xargs","diff","jobs","fg","git","ssh","scp","netstat"];
       const matches = cmds.filter(c => c.startsWith(last));
       if (matches.length === 1) {
         inputEl.value = matches[0] + " ";
@@ -1707,6 +1709,7 @@ class Terminal {
 
       case "ping": {
         const host = args.find(a => !a.startsWith("-")) || "localhost";
+        this.state.ping = host;
         out = [
           `PING ${host} (127.0.0.1) 56(84) octets de données.`,
           `64 octets de ${host}: icmp_seq=1 ttl=64 temps=0.042 ms`,
@@ -1715,6 +1718,45 @@ class Terminal {
           "",
           `--- statistiques ping ${host} ---`,
           "3 paquets transmis, 3 reçus, 0% perte de paquets"
+        ].join("\n");
+        break;
+      }
+
+      case "ssh": {
+        const target = args.find(a => !a.startsWith("-"));
+        if (!target) { out = "usage: ssh utilisateur@hôte"; err = true; break; }
+        const m = target.match(/^([\w.-]+)@([\w.-]+)$/);
+        if (!m) { out = `ssh: format invalide, attendu utilisateur@hôte (reçu '${target}')`; err = true; break; }
+        const [, sshUser, sshHost] = m;
+        this._sshStack.push(this.ps1User);
+        this.ps1User = `${sshUser}@${sshHost}`;
+        this.state.sshHost = sshHost;
+        this.state.sshUser = sshUser;
+        out = `Bienvenue sur ${sshHost} !\nDernière connexion : aujourd'hui depuis 10.0.0.1\nConnecté — tape 'exit' pour te déconnecter.`;
+        break;
+      }
+
+      case "scp": {
+        const src = args.find(a => !a.includes("@") && !a.startsWith("-"));
+        const dest = args.find(a => a.includes("@"));
+        if (!src || !dest) { out = "usage: scp fichier utilisateur@hôte:/chemin"; err = true; break; }
+        if (!this._exists(this._resolve(src))) { out = `scp: ${src}: Aucun fichier ou dossier de ce type`; err = true; break; }
+        const dm = dest.match(/^([\w.-]+)@([\w.-]+):(.*)$/);
+        if (!dm) { out = `scp: destination invalide, attendu utilisateur@hôte:/chemin (reçu '${dest}')`; err = true; break; }
+        this.state.scp = { file: src, host: dm[2], path: dm[3] || "~" };
+        out = `${src}                                    100%   1KB   1.0MB/s   00:00`;
+        break;
+      }
+
+      case "netstat":
+      case "ss": {
+        this.state.netstat = true;
+        out = [
+          "Proto  Local Address       État        Programme",
+          "tcp    0.0.0.0:22          LISTEN      sshd",
+          "tcp    0.0.0.0:80          LISTEN      nginx",
+          "tcp    127.0.0.1:3306      LISTEN      mysqld",
+          "tcp    0.0.0.0:443         LISTEN      nginx",
         ].join("\n");
         break;
       }
@@ -1794,6 +1836,14 @@ class Terminal {
 
       case "exit":
       case "logout": {
+        if (this._sshStack.length) {
+          const prevUser = this._sshStack.pop();
+          const leftHost = this.state.sshHost;
+          this.ps1User = prevUser;
+          this.state.sshExit = leftHost;
+          out = `Connexion à ${leftHost} fermée.`;
+          break;
+        }
         out = "On ne quitte pas le dojo aussi facilement. 🥋\n(Ferme l'onglet si tu veux vraiment partir... lâcheur.)";
         break;
       }
@@ -1811,7 +1861,7 @@ class Terminal {
           "Système      : ps aux, kill, whoami, id, df -h, du, free, uptime, uname -a, date",
           "Propriété    : chown user:groupe fichier, chgrp groupe fichier",
           "Environnement: echo $VAR, env, export VAR=x, history, hostname, alias nom='cmd', unalias",
-          "Réseau       : curl, ping",
+          "Réseau       : curl, ping, ssh utilisateur@hôte, scp fichier user@hôte:/chemin, netstat",
           "Décodage     : base64 [-d], rot13, xxd -r -p",
           "Comparaison  : diff fichier1 fichier2",
           "Enchaînement : cmd | xargs [-n N] autre_cmd",

@@ -6,6 +6,9 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 ## [Non publié]
 
 ### Ajouté
+- Scénario 9 — Réseau & SSH : 6 missions (`ssh`, `scp`, `netstat`), quiz de fin de chapitre,
+  badge et objectif dédiés. Commandes `ssh`/`scp`/`netstat`/`ss` ajoutées au terminal, `exit`
+  gère maintenant une vraie déconnexion SSH (prompt restauré) en plus de son easter egg existant
 - Scénario 8 — Git : 6 missions (`init`, `add`, `commit`, `log`, `branch`, `checkout`),
   quiz de fin de chapitre, badge et objectif dédiés
 - Commandes shell : `chown`, `chgrp`, `alias`/`unalias`, `xargs`, `diff`, jobs en
@@ -18,7 +21,7 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Accessibilité : `aria-label` sur les champs de saisie et boutons icône-seule,
   `aria-live` sur les zones de sortie terminal, `role="dialog"` + `aria-modal` +
   `aria-labelledby` sur les 4 modales
-- Suite de tests unitaires du parseur (`tests/terminal.test.js`, 40 tests, zéro
+- Suite de tests unitaires du parseur (`tests/terminal.test.js`, 47 tests, zéro
   dépendance) + workflow CI GitHub Actions
 - `LICENSE` (MIT), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, templates d'issues GitHub
 - `ROADMAP.md` — ligne de route du projet

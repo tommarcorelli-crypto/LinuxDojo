@@ -21,6 +21,7 @@ const OBJECTIVES = [
   { id: "first",     icon: "🎯", title: "Premier pas",         desc: "Termine ta 1re mission",                    xp: 20, target: 1,   cur: g => g.completed.size },
   { id: "scenario1", icon: "📁", title: "Scénario 1 bouclé",   desc: "Termine les 6 missions du scénario 1",       xp: 40, target: 6,   cur: g => [1,2,3,4,5,6].filter(i => g.completed.has(i)).length },
   { id: "scenario8", icon: "🌱", title: "Ceinture Git",        desc: "Termine les 6 missions du scénario Git",     xp: 45, target: 6,   cur: g => [43,44,45,46,47,48].filter(i => g.completed.has(i)).length },
+  { id: "scenario9", icon: "🌐", title: "Ceinture Réseau",     desc: "Termine les 6 missions du scénario SSH",     xp: 45, target: 6,   cur: g => [49,50,51,52,53,54].filter(i => g.completed.has(i)).length },
   { id: "typist",    icon: "⌨️", title: "Pianiste du shell",   desc: "Tape 50 commandes en tout",                  xp: 25, target: 50,  cur: () => _statTotal() },
   { id: "toolbox",   icon: "🧰", title: "Boîte à outils",      desc: "Utilise ls, cat et grep au moins une fois",  xp: 30, target: 3,   cur: () => ["ls","cat","grep"].filter(c => _statCmd(c) > 0).length },
   { id: "quiz1",     icon: "🎓", title: "Élève sérieux",       desc: "Réussis un quiz de fin de chapitre",         xp: 30, target: 1,   cur: g => g.quizzes.size },

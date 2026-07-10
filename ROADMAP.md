@@ -46,7 +46,8 @@ Petites choses avec un bon rapport effort/valeur, à faire en premier.
 
 ## 📚 Phase 2 — Contenu
 
-- [ ] **Scénario réseau/SSH** — `ssh`, `scp`, `netstat`, dans la continuité logique après Git
+- [x] **Scénario réseau/SSH** — `ssh`, `scp`, `netstat`, 6 missions (Scénario 9), avec 7 tests
+      unitaires dédiés
 - [ ] **Mode "Expert"** — missions plus difficiles sans indices, pour les joueurs qui ont
       fini les 48 missions de base
 - [ ] **Défi du jour partageable** (façon Wordle : grille de résultat copiable) — bon levier
