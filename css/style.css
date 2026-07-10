@@ -1187,6 +1187,29 @@ body::before {
 
 #bandit-win-msg { color: var(--text-md); font-size: 13px; margin-bottom: 20px; }
 
+/* ── MODALE RACCOURCIS CLAVIER ─────────────────────────────── */
+.shortcuts-box h2 { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.shortcuts-intro { color: var(--text-dim); font-size: 12px; margin-bottom: 18px; }
+.shortcuts-grid { display: flex; flex-direction: column; gap: 10px; }
+.shortcuts-row { display: flex; align-items: center; gap: 14px; }
+.shortcuts-keys { flex: 0 0 84px; text-align: right; }
+.shortcuts-row span:last-child { color: var(--text-md); font-size: 13px; }
+kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 3px 8px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border-hi);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan-li);
+  text-align: center;
+}
+.shortcuts-tip { color: var(--text-dim); font-size: 12px; margin-top: 16px; }
+.shortcuts-tip code { color: var(--cyan-li); font-family: var(--font-mono); background: var(--glass); padding: 1px 5px; border-radius: 4px; }
+
 /* ── TOASTS ─────────────────────────────────────────────────── */
 #toast-container {
   position: fixed;
@@ -1806,6 +1829,7 @@ body::after {
 }
 
 /* ── Sound toggle button ── */
+#shortcuts-toggle,
 #sound-toggle {
   background: var(--glass);
   border: 1px solid var(--glass-border);
@@ -1817,6 +1841,7 @@ body::after {
   transition: all .15s;
   flex-shrink: 0;
 }
+#shortcuts-toggle:hover,
 #sound-toggle:hover { border-color: var(--purple-li); color: var(--purple-li); }
 
 /* ── Page profil ── */

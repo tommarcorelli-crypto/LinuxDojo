@@ -6,6 +6,9 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 ## [Non publié]
 
 ### Ajouté
+- Overlay raccourcis clavier : touche `?` (ou bouton ⌨️ dans la nav) pour afficher une
+  modale récapitulant Tab, ↑/↓, Entrée, Échap ; désactivé automatiquement si le focus est
+  dans un champ de saisie pour ne pas interférer avec la frappe
 - Scénario 9 — Réseau & SSH : 6 missions (`ssh`, `scp`, `netstat`), quiz de fin de chapitre,
   badge et objectif dédiés. Commandes `ssh`/`scp`/`netstat`/`ss` ajoutées au terminal, `exit`
   gère maintenant une vraie déconnexion SSH (prompt restauré) en plus de son easter egg existant

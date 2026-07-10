@@ -57,6 +57,7 @@
         <span id="nav-lv">Lv 1</span>
         <span id="nav-xp-label">0 XP</span>
       </div>
+      <button id="shortcuts-toggle" title="Raccourcis clavier (?)" aria-label="Afficher les raccourcis clavier">⌨️</button>
       <button id="sound-toggle" title="Son on/off" aria-label="Activer ou couper le son">🔊</button>
     </div>
   </nav>
@@ -503,6 +504,26 @@
       <div id="quiz-result" style="display:none"></div>
       <div class="win-btns" style="margin-top:16px">
         <button id="quiz-close" class="btn-ghost">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL RACCOURCIS CLAVIER ════════════════════════════ -->
+  <div id="modal-shortcuts" class="modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+    <div class="modal-box shortcuts-box">
+      <h2 id="shortcuts-title">⌨️ Raccourcis clavier</h2>
+      <p class="shortcuts-intro">Valables dans n'importe quel terminal du dojo (Apprendre, Bac à sable, Défis, Infiltration…).</p>
+      <div class="shortcuts-grid">
+        <div class="shortcuts-row"><span class="shortcuts-keys"><kbd>Tab</kbd></span><span>Autocomplétion — commandes et chemins de fichiers</span></div>
+        <div class="shortcuts-row"><span class="shortcuts-keys"><kbd>↑</kbd></span><span>Commande précédente dans l'historique</span></div>
+        <div class="shortcuts-row"><span class="shortcuts-keys"><kbd>↓</kbd></span><span>Commande suivante dans l'historique</span></div>
+        <div class="shortcuts-row"><span class="shortcuts-keys"><kbd>Entrée</kbd></span><span>Exécuter la commande</span></div>
+        <div class="shortcuts-row"><span class="shortcuts-keys"><kbd>Échap</kbd></span><span>Fermer la fenêtre ouverte (indice, quiz, victoire…)</span></div>
+        <div class="shortcuts-row"><span class="shortcuts-keys"><kbd>?</kbd></span><span>Afficher / masquer cet écran</span></div>
+      </div>
+      <p class="shortcuts-tip">💡 Tape <code>help</code> dans un terminal pour la liste des commandes, ou <code>man &lt;commande&gt;</code> pour le détail d'une seule.</p>
+      <div class="win-btns" style="margin-top:16px">
+        <button id="shortcuts-close" class="btn-ghost">Fermer</button>
       </div>
     </div>
   </div>

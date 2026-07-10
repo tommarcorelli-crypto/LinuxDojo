@@ -58,8 +58,10 @@ Petites choses avec un bon rapport effort/valeur, à faire en premier.
       (ex: taper un easter egg précis, finir une mission en moins de 10s...)
 - [ ] **Mini-scénario Docker** — après Git, la suite logique côté outils modernes : `docker ps`,
       `docker run`, `docker build` simulés (reste dans l'esprit "simulateur", pas de vrai Docker)
-- [ ] **Overlay "raccourcis clavier"** (touche `?`) — Tab/↑↓/historique existent déjà mais ne
-      sont découvrables qu'en lisant le `help` ; un overlay rapide améliorerait l'onboarding
+- [x] **Overlay "raccourcis clavier"** (touche `?`) — modale listant Tab, ↑/↓, Entrée, Échap,
+      accessible via un bouton dans la nav ou la touche `?` (désactivée si le focus est dans
+      un champ de saisie, pour ne pas gêner la frappe) ; réutilise le focus trap générique
+      existant, aucune modification du système de modales nécessaire
 - [ ] **Événements saisonniers** — thème visuel temporaire (Halloween, Noël) + un easter egg
       ou mini-défi limité dans le temps ; bon levier d'engagement à faible coût vu que les
       8 thèmes existent déjà comme base technique

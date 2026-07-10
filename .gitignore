@@ -13,3 +13,6 @@ Desktop.ini
 # Logs / temp
 *.log
 tmp/
+
+# Config locale Claude Code
+.claude/

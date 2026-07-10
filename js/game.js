@@ -573,6 +573,21 @@ $("modal-win").addEventListener("click", e => { if(e.target===$("modal-win")) cl
 $("quiz-close").addEventListener("click", () => closeModal("modal-quiz"));
 $("modal-quiz").addEventListener("click", e => { if(e.target===$("modal-quiz")) closeModal("modal-quiz"); });
 
+// Overlay raccourcis clavier — bouton dédié + touche "?" globale
+$("shortcuts-toggle").addEventListener("click", () => openModal("modal-shortcuts"));
+$("shortcuts-close").addEventListener("click", () => closeModal("modal-shortcuts"));
+$("modal-shortcuts").addEventListener("click", e => { if(e.target===$("modal-shortcuts")) closeModal("modal-shortcuts"); });
+document.addEventListener("keydown", e => {
+  if (e.key !== "?" || e.ctrlKey || e.metaKey || e.altKey) return;
+  const a = document.activeElement;
+  const isTyping = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA" || a.isContentEditable);
+  if (isTyping) return;
+  const anyOtherModalOpen = document.querySelector(".modal.open:not(#modal-shortcuts)");
+  if (anyOtherModalOpen) return;
+  e.preventDefault();
+  $("modal-shortcuts").classList.toggle("open");
+});
+
 // ── EFFETS DE FOLIE : câblage ──────────────────────────────────
 // Vignette CRT
 const vignette = document.createElement("div");
