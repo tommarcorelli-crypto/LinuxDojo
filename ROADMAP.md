@@ -52,8 +52,10 @@ Petites choses avec un bon rapport effort/valeur, à faire en premier.
       fini les 48 missions de base
 - [ ] **Défi du jour partageable** (façon Wordle : grille de résultat copiable) — bon levier
       de viralité
-- [ ] **Plus de boss fights / kata** — le contenu actuel (5 boss, 6 katas) peut être étendu
-      une fois le rythme de sortie des scénarios calé
+- [ ] **Plus de boss fights** — le contenu actuel (5 boss) peut être étendu une fois le
+      rythme de sortie des scénarios calé
+- [x] **Kata Git** — 7ᵉ kata ajouté (`git init/status/add/commit/log/branch/checkout`),
+      pour muscler les réflexes sur le scénario 8 (Git) comme les autres chapitres
 - [x] **Badges/succès secrets** — 6 badges cachés (icône `???` tant qu'ils ne sont pas
       débloqués) : taper `cowsay`, `sl`, `fortune`, survivre à `vim` (`:q!`/`:wq`), trouver
       le Konami code, ou finir une mission en moins de 10 secondes. Système générique

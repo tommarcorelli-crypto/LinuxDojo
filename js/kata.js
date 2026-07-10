@@ -33,6 +33,11 @@ const KATAS = [
     desc: "Le quotidien de l'administrateur.",
     cmds: ["df -h", "du -sh /var/*", "free -h", "top -b -n 1", "systemctl status ssh", "journalctl -u nginx", "crontab -l", "uptime"],
   },
+  {
+    id: "git", name: "Git", emoji: "🌱", color: "#f43f5e",
+    desc: "Le versioning dans les doigts.",
+    cmds: ["git init", "git status", "git add .", "git commit -m \"premier commit\"", "git log", "git branch feature", "git checkout -b hotfix", "git checkout main"],
+  },
 ];
 
 const KATA_BEST_KEY = "linuxdojo_kata_best";
