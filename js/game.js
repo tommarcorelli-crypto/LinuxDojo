@@ -51,7 +51,8 @@ function loadSave() {
 function defaultSave() { return { version: SAVE_VERSION, xp: 0, completed: new Set(), badges: [], quizzes: new Set(), reviewCounts: {}, objectives: [], secrets: {} }; }
 function persist() {
   const s = { ...GAME, completed: [...GAME.completed], quizzes: [...GAME.quizzes] };
-  localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }
+  catch (e) { console.warn("[LinuxDojo] Sauvegarde impossible (stockage bloqué ou plein) :", e); }
 }
 
 // ── Statistiques de commandes ──────────────────────────────────
@@ -64,7 +65,7 @@ function bumpStat(cmd) {
   STATS.cmd[cmd] = (STATS.cmd[cmd] || 0) + 1;
   STATS.total++;
   STATS.days[_dayKey()] = (STATS.days[_dayKey()] || 0) + 1;
-  localStorage.setItem(STATS_KEY, JSON.stringify(STATS));
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(STATS)); } catch {}
   if (typeof objectivesTick === "function") objectivesTick();
   if (typeof checkBadges === "function" && typeof GAME !== "undefined") checkBadges();
 }
@@ -767,7 +768,7 @@ const pfReset = $("pf-reset");
 if (pfReset) {
   pfReset.addEventListener("click", () => {
     if (confirm("Réinitialiser toute ta progression ? C'est irréversible.")) {
-      localStorage.removeItem(SAVE_KEY);
+      try { localStorage.removeItem(SAVE_KEY); } catch {}
       GAME = defaultSave();
       updateXPBar(); updateHomeStats();
       if (typeof updateNavRank === "function") updateNavRank();

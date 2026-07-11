@@ -17,3 +17,5 @@ jobs:
         run: node tests/terminal.test.js
       - name: Lancer les tests de progression (XP, badges, sauvegarde)
         run: node tests/game.test.js
+      - name: Lancer les tests du journal d'erreurs
+        run: node tests/errors.test.js

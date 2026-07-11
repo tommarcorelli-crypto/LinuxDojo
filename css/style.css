@@ -79,6 +79,7 @@ body::before {
   top: 0; left: 0; right: 0;
   height: var(--nav-h);
   background: rgba(8,8,16,0.85);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--glass-border);
   display: flex;
@@ -236,6 +237,7 @@ body::before {
   border-radius: 20px;
   margin-bottom: 24px;
   font-family: var(--font-mono);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -293,6 +295,7 @@ body::before {
   border-radius: var(--radius);
   cursor: pointer;
   font-family: var(--font-ui);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   transition: all .2s;
 }
@@ -315,6 +318,7 @@ body::before {
   padding: 24px;
   cursor: pointer;
   transition: all .25s;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   position: relative;
   overflow: hidden;
@@ -363,6 +367,7 @@ body::before {
   border-radius: var(--radius);
   padding: 20px 32px;
   text-align: center;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 .hstat span {
@@ -411,6 +416,7 @@ body::before {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 14px 16px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   transition: border-color .25s, transform .25s;
 }
@@ -478,6 +484,7 @@ body::before {
   border-right: 1px solid var(--glass-border);
   overflow-y: auto;
   flex-shrink: 0;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 #learn-sidebar::-webkit-scrollbar { width: 3px; }
@@ -581,6 +588,7 @@ body::before {
   border-radius: var(--radius);
   padding: 16px 20px;
   margin-bottom: 16px;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -655,6 +663,7 @@ body::before {
   border-top: 1px solid var(--glass-border);
   display: flex;
   justify-content: flex-end;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -666,6 +675,7 @@ body::before {
   border-bottom: 1px solid var(--glass-border);
   padding: 12px 20px;
   flex-shrink: 0;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -731,6 +741,7 @@ body::before {
   background: rgba(8,8,16,0.8);
   border-top: 1px solid var(--glass-border);
   flex-shrink: 0;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -784,6 +795,7 @@ body::before {
   cursor: pointer;
   font-family: var(--font-ui);
   transition: all .15s;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 .btn-ghost:hover { border-color: var(--glass-border-hi); color: var(--text); }
@@ -839,6 +851,7 @@ body::before {
   flex-direction: column;
   overflow-y: auto;
   flex-shrink: 0;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   padding: 24px;
   gap: 20px;
@@ -992,6 +1005,7 @@ body::before {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 20px 24px;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 
@@ -1023,6 +1037,7 @@ body::before {
   border-radius: var(--radius);
   overflow-y: auto;
   padding: 14px 18px;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -1030,6 +1045,7 @@ body::before {
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 
@@ -1066,6 +1082,7 @@ body::before {
   border-right: 1px solid var(--glass-border);
   overflow-y: auto;
   flex-shrink: 0;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   padding: 20px 16px;
 }
@@ -1115,6 +1132,7 @@ body::before {
   border-bottom: 1px solid var(--glass-border);
   padding: 16px 20px;
   flex-shrink: 0;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -1150,6 +1168,7 @@ body::before {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.7);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   align-items: center;
   justify-content: center;
@@ -1233,6 +1252,7 @@ kbd {
   padding: 10px 18px;
   border-radius: 10px;
   font-family: var(--font-mono);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   animation: toast-in .3s ease, toast-out .3s ease 2.7s forwards;
@@ -1344,6 +1364,7 @@ kbd {
   border-right: 1px solid var(--glass-border);
   overflow-y: auto;
   flex-shrink: 0;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   padding: 20px 16px;
 }
@@ -1392,6 +1413,7 @@ kbd {
   background: rgba(8,8,16,0.55);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
@@ -1532,7 +1554,8 @@ body.boss-hit #crt-vignette { box-shadow: inset 0 0 220px rgba(239,68,68,0.65); 
   gap: 12px; text-align: center; padding: 20px;
 }
 .cert-card.locked .cert-preview { filter: blur(7px) brightness(0.5) grayscale(0.4); }
-.cert-card.locked .cert-overlay { background: rgba(8,8,16,0.55); backdrop-filter: blur(2px); }
+.cert-card.locked .cert-overlay { background: rgba(8,8,16,0.55); -webkit-backdrop-filter: blur(2px);
+ backdrop-filter: blur(2px); }
 .cert-card.unlocked .cert-overlay {
   opacity: 0; transition: opacity .2s;
   background: rgba(8,8,16,0.55);
@@ -1599,6 +1622,7 @@ body.boss-hit #crt-vignette { box-shadow: inset 0 0 220px rgba(239,68,68,0.65); 
   border-radius: var(--radius-lg);
   padding: 28px 32px;
   margin-bottom: 24px;
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   position: relative;
   overflow: hidden;
@@ -1652,6 +1676,7 @@ body.boss-hit #crt-vignette { box-shadow: inset 0 0 220px rgba(239,68,68,0.65); 
     top: var(--nav-h);
     left: 0; right: 0;
     background: rgba(8,8,16,0.98);
+    -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     flex-direction: column;
     padding: 12px;
@@ -1712,6 +1737,7 @@ body::after {
   box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 40px rgba(124,58,237,0.4);
   transition: right 0.5s cubic-bezier(0.2,0.9,0.3,1);
   overflow: hidden;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 .achievement-popup.show { right: 24px; }
@@ -1909,6 +1935,7 @@ body::after {
   border-radius: var(--radius);
   padding: 20px;
   text-align: center;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   transition: transform .2s;
 }
@@ -1986,6 +2013,7 @@ body::after {
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 #sandbox-terminal::-webkit-scrollbar { width: 4px; }
@@ -1996,6 +2024,7 @@ body::after {
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 .sandbox-prompt { color: var(--green-li); font-family: var(--font-mono); font-size: 13px; white-space: nowrap; flex-shrink: 0; }
@@ -2090,6 +2119,7 @@ body.season-noel {
   max-width: 900px; margin: 20px auto 0; padding: 14px 20px;
   border-radius: 14px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   animation: banner-glow 4s ease-in-out infinite;
 }
@@ -2208,7 +2238,8 @@ body.season-noel {
   color: var(--text); font-size: 14px; font-family: var(--font-ui);
   padding: 12px 18px; border-radius: 12px;
   outline: none; transition: border-color .15s, box-shadow .15s;
-  margin-bottom: 14px; backdrop-filter: blur(10px);
+  margin-bottom: 14px; -webkit-backdrop-filter: blur(10px);
+ backdrop-filter: blur(10px);
 }
 #glossary-search::placeholder { color: var(--text-dim); }
 #glossary-search:focus { border-color: var(--purple-li); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
@@ -2287,6 +2318,7 @@ body.season-noel {
   border: 1px solid rgba(124,58,237,0.35);
   border-radius: 14px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   animation: banner-glow 4s ease-in-out infinite;
 }
@@ -2311,6 +2343,7 @@ body.season-noel {
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 14px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   animation: update-banner-in .35s cubic-bezier(.2,.8,.2,1);
 }

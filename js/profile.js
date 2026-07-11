@@ -137,6 +137,7 @@ function renderProfile() {
   renderHeatmap();
   renderThemes();
   if (typeof renderCertificate === "function") renderCertificate();
+  renderErrorLogStatus();
 }
 
 /* ── Heatmap d'activité (style GitHub, 12 semaines) ────────── */
@@ -209,14 +210,54 @@ function importSave() {
   }
 }
 
+// ── Journal d'erreurs (js/errors.js) ────────────────────────
+// Affiche combien d'erreurs JS ont été capturées côté joueur, avec un
+// bouton pour copier un rapport (même mécanique presse-papier/repli que
+// exportSave) et un pour vider le journal.
+function renderErrorLogStatus() {
+  const status = document.getElementById("pf-err-status");
+  if (!status || typeof getErrorLog !== "function") return;
+  const log = getErrorLog();
+  if (!log.length) {
+    status.textContent = "Aucune erreur détectée 👍";
+  } else {
+    const total = log.reduce((sum, e) => sum + (e.count || 1), 0);
+    status.textContent = `⚠️ ${log.length} erreur(s) distincte(s) (${total} occurrence(s) au total)`;
+  }
+}
+
+function copyErrorReport() {
+  if (typeof getErrorLog !== "function") return;
+  const log = getErrorLog();
+  if (!log.length) { if (typeof showToast === "function") showToast("Aucune erreur à copier 👍"); return; }
+  const report = JSON.stringify({ exportedAt: new Date().toISOString(), errors: log }, null, 2);
+  const done = () => { if (typeof showToast === "function") showToast("📋 Rapport d'erreurs copié !"); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(report).then(done).catch(() => prompt("Copie ce rapport d'erreurs :", report));
+  } else {
+    prompt("Copie ce rapport d'erreurs :", report);
+  }
+}
+
+function clearErrorReport() {
+  if (typeof clearErrorLog !== "function") return;
+  clearErrorLog();
+  renderErrorLogStatus();
+  if (typeof showToast === "function") showToast("🗑️ Journal d'erreurs vidé.");
+}
+
 // Câblage des boutons (les scripts sont chargés en fin de body, le DOM existe)
 (() => {
   const ex = document.getElementById("pf-export");
   const im = document.getElementById("pf-import");
   const nm = document.getElementById("pf-name");
+  const ec = document.getElementById("pf-err-copy");
+  const ev = document.getElementById("pf-err-clear");
   if (ex) ex.addEventListener("click", exportSave);
   if (im) im.addEventListener("click", importSave);
   if (nm && typeof setNinjaName === "function") nm.addEventListener("click", setNinjaName);
+  if (ec) ec.addEventListener("click", copyErrorReport);
+  if (ev) ev.addEventListener("click", clearErrorReport);
 })();
 
 function updateNavRank() {

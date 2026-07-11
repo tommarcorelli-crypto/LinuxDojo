@@ -16,3 +16,7 @@ tmp/
 
 # Config locale Claude Code
 .claude/
+
+# Build de minification (npm run build) — régénéré à la volée, jamais commité
+node_modules/
+dist/

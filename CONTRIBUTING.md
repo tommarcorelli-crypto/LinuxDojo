@@ -5,9 +5,13 @@ correction, une amélioration, ou une nouvelle mission.
 
 ## Avant de commencer
 
-- Aucune installation nécessaire : le projet est en vanilla JS/HTML/CSS,
-  sans framework ni étape de build. Ouvre `index.html` dans un navigateur
-  (ou sers le dossier avec `python3 -m http.server`) et c'est prêt.
+- Aucune installation nécessaire pour développer : le projet est en vanilla
+  JS/HTML/CSS, sans framework. Ouvre `index.html` dans un navigateur (ou sers
+  le dossier avec `python3 -m http.server`) et c'est prêt — tu travailles
+  directement sur `js/*.js`/`css/style.css`, non minifiés.
+- Un script de build **optionnel** (`npm run build`, voir plus bas) permet de
+  générer une version minifiée avant déploiement. Il n'est jamais nécessaire
+  pour contribuer ou tester en local.
 - Jette un œil au [`ROADMAP.md`](ROADMAP.md) pour voir si ton idée y est
   déjà, ou pour t'inspirer d'une piste déjà identifiée.
 
@@ -64,11 +68,31 @@ Points importants :
   `term.state`, qui contient des indicateurs posés par certaines commandes
   (`state.chmod`, `state.gitCommit`, etc. — voir `terminal.js` pour la liste).
 
+## Build (minification avant déploiement)
+
+Le jeu se joue directement sur les fichiers sources (`js/*.js`,
+`css/style.css`), sans étape de build — c'est le mode de développement
+normal. Un script optionnel permet de générer une version plus légère avant
+un déploiement en production :
+
+```bash
+npm install   # une seule fois, installe terser + clean-css en devDependency
+npm run build # génère ./dist (JS/CSS minifiés, ~28% de poids en moins)
+```
+
+`dist/` est une copie complète et déployable du site : mêmes noms de
+fichiers, mêmes chemins relatifs que les sources (donc `index.html` et
+`sw.js` sont copiés tels quels, sans réécriture de chemins). C'est le
+contenu de `dist/` qu'on déploie, pas la racine du repo. Ce dossier n'est
+jamais commité (voir `.gitignore`) : il est régénéré à chaque build.
+
 ## Style de code
 
-- Pas de build, pas de TypeScript, pas de framework — le projet reste
-  volontairement simple. Merci de ne pas introduire de dépendance sans en
-  discuter d'abord.
+- Pas de framework, pas de TypeScript côté jeu — le projet reste
+  volontairement simple. Le seul outillage Node du repo sert au build de
+  minification (optionnel, dev-only) et aux tests (zéro dépendance). Merci
+  de ne pas introduire de dépendance supplémentaire sans en discuter
+  d'abord.
 - Commentaires et messages utilisateur en français, cohérent avec le reste
   du projet.
 - Encodage UTF-8, fins de ligne : `index.html`/`css/style.css` sont en

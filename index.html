@@ -404,6 +404,13 @@
         <button class="btn-ghost" id="pf-import">📥 Importer</button>
         <button class="btn-ghost" id="pf-reset">↺ Réinitialiser la progression</button>
       </div>
+
+      <div class="profile-section-title">🐛 Journal d'erreurs</div>
+      <p style="font-size:12px;color:var(--text-md);margin-bottom:10px" id="pf-err-status">Aucune erreur détectée 👍</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-ghost" id="pf-err-copy">📋 Copier le rapport</button>
+        <button class="btn-ghost" id="pf-err-clear">🗑️ Vider le journal</button>
+      </div>
     </div>
   </div>
 
@@ -548,6 +555,7 @@
     <button id="multitab-banner-dismiss" class="btn-ghost" style="padding:7px 14px;font-size:12px">Ignorer</button>
   </div>
 
+  <script src="js/errors.js"></script>
   <script src="js/levels.js"></script>
   <script src="js/expert.js"></script>
   <script src="js/terminal.js"></script>

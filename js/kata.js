@@ -50,7 +50,7 @@ class KataMode {
   }
 
   _loadBest() { try { return JSON.parse(localStorage.getItem(KATA_BEST_KEY)) || {}; } catch { return {}; } }
-  _saveBest() { localStorage.setItem(KATA_BEST_KEY, JSON.stringify(this.best)); }
+  _saveBest() { try { localStorage.setItem(KATA_BEST_KEY, JSON.stringify(this.best)); } catch {} }
 
   reset() {
     this.kata = null;

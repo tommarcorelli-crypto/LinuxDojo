@@ -216,12 +216,14 @@ class GameShell {
     try { return JSON.parse(localStorage.getItem(this.SAVE)) || {}; } catch { return {}; }
   }
   _save() {
-    localStorage.setItem(this.SAVE, JSON.stringify({
-      foundSecrets: [...this.foundSecrets],
-      inventory:    [...this.inventory],
-      visited:      [...this.visited],
-      wonFinal:     this.wonFinal,
-    }));
+    try {
+      localStorage.setItem(this.SAVE, JSON.stringify({
+        foundSecrets: [...this.foundSecrets],
+        inventory:    [...this.inventory],
+        visited:      [...this.visited],
+        wonFinal:     this.wonFinal,
+      }));
+    } catch {}
   }
 
   init() {

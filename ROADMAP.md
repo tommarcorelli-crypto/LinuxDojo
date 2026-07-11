@@ -132,12 +132,57 @@ Petites choses avec un bon rapport effort/valeur, à faire en premier.
       Le reste de l'audit était déjà conforme : `theme-color` présent et cohérent avec le
       manifest, viewport correct, HTTPS (GitHub Pages), service worker enregistré avec fallback
       offline, `start_url`/`scope`/`display: standalone` déjà bien configurés.
-- [ ] **Test de compatibilité navigateurs** — vérifié seulement sur Chromium jusqu'ici ;
+- [x] **Test de compatibilité navigateurs** — vérifié seulement sur Chromium jusqu'ici ;
       à tester sur Firefox et Safari (notamment le service worker et les animations CSS)
-- [ ] **Suivi d'erreurs** (type Sentry, ou une solution auto-hébergée légère) — pour être
+      → Pas d'accès à des navigateurs réels dans cet environnement, donc audit statique
+      du code à la place. Deux vrais problèmes trouvés et corrigés :
+      1. `backdrop-filter` (glassmorphism, 33 occurrences dans `css/style.css`) n'avait pas
+         son équivalent préfixé `-webkit-backdrop-filter`, requis par Safari < 18 (le
+         support non préfixé n'est arrivé qu'en 2024) — tout l'effet verre dépoli aurait
+         été invisible sur Safari/iOS un peu ancien. Préfixe ajouté partout.
+      2. Écritures `localStorage.setItem`/`removeItem` non protégées par `try/catch` dans
+         `bandit.js`, `boss.js`, `challenges.js`, `daily.js`, `game.js` (x3), `gameshell.js`,
+         `kata.js` — Safari peut lever une exception synchrone sur l'écriture (navigation
+         privée stricte, cookies/stockage bloqués par réglages, quota dépassé), ce qui
+         aurait cassé silencieusement la sauvegarde XP/badges/meilleurs scores en pleine
+         partie. Toutes les écritures sont maintenant protégées (les lectures l'étaient
+         déjà). `persist()` (sauvegarde principale) logue un avertissement en console si
+         l'écriture échoue, pour rester diagnosticable.
+      Vérifié sans problème : pas de `:has()`/`@container`/autres CSS trop récentes, `gap`
+      en flexbox (support large depuis 2021), unités `dvh` toujours accompagnées d'un
+      fallback `vh`, pas de `requestIdleCallback` (absent de Safari) ni d'autre API JS
+      récente non universellement supportée. `navigator.clipboard` a déjà un repli
+      (`prompt()`) si l'API est absente.
+- [x] **Suivi d'erreurs** (type Sentry, ou une solution auto-hébergée légère) — pour être
       notifié si une erreur JS survient chez un vrai joueur, plutôt que de ne jamais le savoir
-- [ ] **Compression/minification** — même sans build, un script simple de minification avant
+      → Pas de backend pour ce projet (PWA statique GitHub Pages), donc pas de vrai Sentry :
+      solution 100% auto-hébergée et cohérente avec l'esprit "zéro compte" du jeu. Nouveau
+      module `js/errors.js`, chargé en tout premier (avant tous les autres scripts) pour
+      capturer les erreurs même pendant l'initialisation des autres fichiers :
+      - Écoute `window.onerror` et `unhandledrejection`, journalise dans `localStorage`
+        (`linuxdojo_errors`), ring buffer de 20 entrées distinctes max
+      - Déduplication : la même erreur répétée en moins de 5s incrémente un compteur au lieu
+        de spammer le journal (utile pour les erreurs qui boucleraient, ex: dans un
+        `setInterval`)
+      - Nouvelle section « 🐛 Journal d'erreurs » dans la page Profil (`js/profile.js`) :
+        statut (nombre d'erreurs distinctes/occurrences), bouton « Copier le rapport »
+        (presse-papier + repli `prompt()`, même mécanique que l'export de sauvegarde) pour
+        transmettre le rapport en cas de bug, et bouton « Vider le journal »
+      - 12 tests dédiés (`tests/errors.test.js`), branchés à la CI GitHub Actions
+      - Bonus : en touchant la liste de précache du service worker, découvert que
+        `js/expert.js` et `js/seasonal.js` en étaient absents depuis leur ajout (Phase 1/2)
+        — corrigé au passage (mode Expert et thèmes saisonniers étaient cassés hors-ligne)
+- [x] **Compression/minification** — même sans build, un script simple de minification avant
       déploiement réduirait le poids total (actuellement chargé tel quel, ~200 Ko de JS)
+      → `npm run build` (`scripts/build.js`, terser + clean-css en devDependency) génère un
+      dossier `dist/` : copie déployable du site avec chaque fichier `js/*.js` et
+      `css/style.css` minifié sous le même nom/chemin — donc `index.html` et `sw.js` sont
+      copiés tels quels, sans aucune réécriture de référence. Résultat mesuré : 535 Ko → 385 Ko
+      (~28 % de gain, tous fichiers confondus, jusqu'à −55 % sur certains fichiers). `dist/`
+      n'est jamais commité (ajouté au `.gitignore`, comme `node_modules/`). Aucun changement
+      pour le développement courant : on continue d'éditer/tester les sources non minifiées
+      directement, le build ne sert qu'avant un déploiement. Documenté dans `CONTRIBUTING.md`
+      et `README.md`.
 
 ## 📈 Phase 4 — Croissance / communauté
 

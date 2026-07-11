@@ -138,7 +138,7 @@ function _dayNumber() { return _daysSinceRef() + 1; }
 function _loadDaily() {
   try { return JSON.parse(localStorage.getItem(DAILY_KEY)) || {}; } catch { return {}; }
 }
-function _saveDaily(state) { localStorage.setItem(DAILY_KEY, JSON.stringify(state)); }
+function _saveDaily(state) { try { localStorage.setItem(DAILY_KEY, JSON.stringify(state)); } catch {} }
 
 function dailyStatus() {
   const st = _loadDaily();

@@ -5,14 +5,15 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Non publié]
 
-### Corrigé
-- Icônes `maskable` du manifest : `icon-512.png` était réutilisée telle quelle sans zone
-  de sécurité (contenu touchant les 4 bords), ce qui aurait rogné le logo sur les launchers
-  Android appliquant un masque. Nouvelles icônes dédiées `icon-192-maskable.png` /
-  `icon-512-maskable.png` (fond plein, logo à 66% du canvas). Cache-busting `v8` → `v9`,
-  Service Worker `v14` → `v15`
-
 ### Ajouté
+- Script de build optionnel (`npm run build`, `scripts/build.js`) : minifie `js/*.js`
+  (terser) et `css/style.css` (clean-css) dans un dossier `dist/` prêt à déployer, sans
+  changer les chemins ni les noms de fichiers. ~28 % de poids en moins (535 Ko → 385 Ko).
+  Aucun impact sur le développement courant (toujours sans build), voir `CONTRIBUTING.md`
+- Suivi d'erreurs auto-hébergé (`js/errors.js`, chargé en premier) : capture
+  `window.onerror`/`unhandledrejection`, journal `localStorage` dédupliqué (ring buffer
+  20 entrées), nouvelle section « Journal d'erreurs » dans le Profil avec bouton copier/
+  vider. 12 tests dédiés (`tests/errors.test.js`)
 - Détection de sauvegarde concurrente entre onglets : si un autre onglet modifie la
   progression (`localStorage`), une bannière prévient et propose de recharger, pour
   éviter d'écraser par erreur le progrès le plus récent (`js/game.js`, event `storage`)
@@ -52,6 +53,18 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
   dynamiquement au lieu d'un nombre figé obsolète (`/ 36`)
 
 ### Corrigé
+- Précache du service worker : `js/expert.js` et `js/seasonal.js` manquaient de la liste
+  `ASSETS` depuis leur ajout (mode Expert et thèmes saisonniers cassés hors-ligne)
+- Compatibilité Safari : préfixe `-webkit-backdrop-filter` ajouté aux 33 usages de
+  `backdrop-filter` (effet verre dépoli invisible sans ça sur Safari < 18) ; toutes les
+  écritures `localStorage` non protégées (`bandit.js`, `boss.js`, `challenges.js`,
+  `daily.js`, `game.js`, `gameshell.js`, `kata.js`) enveloppées de `try/catch` (Safari peut
+  lever une exception sur l'écriture en navigation privée stricte ou stockage bloqué)
+- Icônes `maskable` du manifest : `icon-512.png` était réutilisée telle quelle sans zone
+  de sécurité (contenu touchant les 4 bords), ce qui aurait rogné le logo sur les launchers
+  Android appliquant un masque. Nouvelles icônes dédiées `icon-192-maskable.png` /
+  `icon-512-maskable.png` (fond plein, logo à 66% du canvas). Cache-busting `v8` → `v9`,
+  Service Worker `v14` → `v17`
 - L'enchaînement `cmd1 && cmd2` était purement décoratif : taper le hint exact d'une mission
   (ex. `git init && git add . && git commit -m "..."`) n'exécutait que la première commande.
   9 hints des scénarios Git et Réseau étaient concernés. Implémenté un vrai enchaînement avec

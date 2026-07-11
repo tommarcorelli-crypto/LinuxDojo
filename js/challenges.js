@@ -233,7 +233,7 @@ class ChallengeMode {
   }
 
   _loadBest() { try { return parseInt(localStorage.getItem(this.BEST_KEY)) || 0; } catch { return 0; } }
-  _saveBest() { if (this.score > this.best) { this.best = this.score; localStorage.setItem(this.BEST_KEY, String(this.best)); } }
+  _saveBest() { if (this.score > this.best) { this.best = this.score; try { localStorage.setItem(this.BEST_KEY, String(this.best)); } catch {} } }
 
   init() {
     this.current = 0;

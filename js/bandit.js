@@ -214,7 +214,7 @@ class BanditMode {
   }
 
   _load() { try { return JSON.parse(localStorage.getItem(this.SAVE)) || []; } catch { return []; } }
-  _save() { localStorage.setItem(this.SAVE, JSON.stringify([...this.completed])); }
+  _save() { try { localStorage.setItem(this.SAVE, JSON.stringify([...this.completed])); } catch {} }
 
   init() {
     const story = document.getElementById("bandit-story");

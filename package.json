@@ -1,0 +1,14 @@
+{
+  "name": "linuxdojo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LinuxDojo — jeu d'apprentissage du terminal Linux (PWA statique, zéro backend).",
+  "scripts": {
+    "test": "node tests/terminal.test.js && node tests/game.test.js && node tests/errors.test.js",
+    "build": "node scripts/build.js"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "terser": "^5.31.0"
+  }
+}

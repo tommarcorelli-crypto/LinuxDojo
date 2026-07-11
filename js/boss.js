@@ -449,7 +449,7 @@ class BossMode {
   }
 
   _load() { try { return JSON.parse(localStorage.getItem(this.SAVE)) || {}; } catch { return {}; } }
-  _save() { localStorage.setItem(this.SAVE, JSON.stringify({ defeated: [...this.defeated] })); }
+  _save() { try { localStorage.setItem(this.SAVE, JSON.stringify({ defeated: [...this.defeated] })); } catch {} }
 
   defeatedCount() { return this.defeated.size; }
 

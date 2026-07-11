@@ -2,7 +2,7 @@
 
 **Apprends Linux en jouant. Pour de vrai.**
 
-PWA 100 % vanilla JS (zéro dépendance, zéro build) : un terminal Linux simulé, des missions scénarisées, des boss fights et de la vraie pédagogie.
+PWA 100 % vanilla JS (zéro dépendance, aucun build requis pour jouer ou contribuer) : un terminal Linux simulé, des missions scénarisées, des boss fights et de la vraie pédagogie.
 
 **▶ Jouer : https://tommarcorelli.github.io/LinuxDojo/**
 
@@ -38,10 +38,12 @@ XP, 8 rangs (Bleu → Légende), 15 badges, 17 objectifs transversaux, défi du 
 
 ## Tech
 
-- Vanilla JS / HTML / CSS — aucun framework, aucun build
+- Vanilla JS / HTML / CSS — aucun framework, aucun build requis pour développer
 - PWA : installable, hors-ligne (service worker)
 - Sauvegarde locale (localStorage) + export/import par code
 - Effets : Web Audio API, matrix rain, séquence de boot, particules, konami code 🎮
+- Build de minification optionnel avant déploiement (`npm run build` → `dist/`,
+  ~28 % de poids JS/CSS en moins) — voir [`CONTRIBUTING.md`](CONTRIBUTING.md#build-minification-avant-déploiement)
 
 ## Tests
 
