@@ -1,10 +1,10 @@
-// sw.js — Service Worker LinuxDojo v26
-const CACHE = "linuxdojo-v26";
+// sw.js — Service Worker LinuxDojo v27
+const CACHE = "linuxdojo-v27";
 const ASSETS = [
   "./","./index.html","./css/style.css",
   "./js/errors.js","./js/i18n.js",
   "./js/levels.js","./js/i18n/levels.en.js","./js/expert.js","./js/i18n/expert.en.js","./js/terminal.js","./js/fx.js","./js/gameshell.js",
-  "./js/challenges.js","./js/i18n/challenges.en.js","./js/bandit.js","./js/i18n/bandit.en.js","./js/boss.js","./js/kata.js","./js/i18n/kata.en.js","./js/certificate.js","./js/quizzes.js","./js/i18n/quizzes.en.js","./js/glossary.js","./js/i18n/glossary.en.js","./js/daily.js","./js/i18n/daily.en.js","./js/profile.js","./js/game.js","./js/objectives.js","./js/i18n/objectives.en.js","./js/seasonal.js","./js/i18n/seasonal.en.js","./js/sw-register.js","./js/analytics.js",
+  "./js/challenges.js","./js/i18n/challenges.en.js","./js/bandit.js","./js/i18n/bandit.en.js","./js/boss.js","./js/i18n/boss.en.js","./js/kata.js","./js/i18n/kata.en.js","./js/certificate.js","./js/quizzes.js","./js/i18n/quizzes.en.js","./js/glossary.js","./js/i18n/glossary.en.js","./js/daily.js","./js/i18n/daily.en.js","./js/profile.js","./js/game.js","./js/objectives.js","./js/i18n/objectives.en.js","./js/seasonal.js","./js/i18n/seasonal.en.js","./js/sw-register.js","./js/analytics.js",
   "./manifest.json",
   "./icons/icon-192.png?v=9","./icons/icon-512.png?v=9",
   "./icons/icon-192-maskable.png?v=9","./icons/icon-512-maskable.png?v=9"

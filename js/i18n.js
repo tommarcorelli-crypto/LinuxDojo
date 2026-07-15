@@ -189,6 +189,32 @@ const UI = {
     "boss.flee": "🏃 Fuir",
     "boss.hint": "💡 Indice <span class=\"cost\">−10 XP</span>",
     "boss.placeholder": "frappe avec la bonne commande...",
+    "boss.idleName": "Salle des Boss",
+    "boss.idleTag": "Choisis ton adversaire. Chaque commande juste inflige des dégâts. Timer écoulé = tu perds un cœur.",
+    "boss.idleDesc": "Les boss ne t'attendront pas éternellement...",
+    "boss.idleTerm": "⚔️  SALLE DES BOSS — sélectionne un adversaire pour engager le combat.",
+    "boss.appears": "⚔️  {name} apparaît !",
+    "boss.phaseLabel": "Phase {n}/{total} — {title}",
+    "boss.hintBtn": "💡 Indice <span class='cost'>−{cost} XP</span>",
+    "boss.phaseStart": "▶ Phase {n}/{total} : {title}",
+    "boss.hit": "💥 TOUCHÉ ! {name} perd {dmg} HP !",
+    "boss.defeated": "🏆 {name} EST VAINCU !",
+    "boss.xpGain": "✨ +{xp} XP",
+    "boss.alreadyDone": "(déjà vaincu — pas de récompense, juste la gloire)",
+    "boss.chooseOther": "→ Choisis un autre boss dans la liste.",
+    "boss.blackbeltWon": "🖤 CEINTURE NOIRE OBTENUE — ton certificat t'attend dans le Profil !",
+    "boss.blackbeltToast": "🖤 Certificat de Ceinture Noire débloqué → Profil",
+    "boss.timeout": "⏰ Temps écoulé ! {taunt}",
+    "boss.heartsLeft": "Il te reste {hearts} — la phase recommence.",
+    "boss.ko": "💀 K.O. — {name} t'a terrassé.",
+    "boss.koTaunt": "« Reviens quand tu seras plus rapide. »",
+    "boss.retry": "⚔️ Réessayer le combat",
+    "boss.hintReveal": "💡 {hint}",
+    "boss.lockedTag": "Bats {n} boss pour débloquer l'examen",
+    "boss.metaPhases": "⚔️ {n} phases",
+    "boss.doneChip": "✓ vaincu",
+    "boss.achDefeated": "{name} vaincu !",
+    "boss.achAgain": "Encore vaincu. Impitoyable.",
 
     // ── Profil ──
     "profile.cert": "🖤 Certificat de Ceinture Noire",
@@ -438,6 +464,32 @@ const UI = {
     "boss.flee": "🏃 Flee",
     "boss.hint": "💡 Hint <span class=\"cost\">−10 XP</span>",
     "boss.placeholder": "strike with the right command...",
+    "boss.idleName": "Boss Room",
+    "boss.idleTag": "Choose your opponent. Every correct command deals damage. Timer runs out = you lose a heart.",
+    "boss.idleDesc": "The bosses won't wait forever...",
+    "boss.idleTerm": "⚔️  BOSS ROOM — select an opponent to start the fight.",
+    "boss.appears": "⚔️  {name} appears!",
+    "boss.phaseLabel": "Phase {n}/{total} — {title}",
+    "boss.hintBtn": "💡 Hint <span class='cost'>−{cost} XP</span>",
+    "boss.phaseStart": "▶ Phase {n}/{total}: {title}",
+    "boss.hit": "💥 HIT! {name} loses {dmg} HP!",
+    "boss.defeated": "🏆 {name} IS DEFEATED!",
+    "boss.xpGain": "✨ +{xp} XP",
+    "boss.alreadyDone": "(already defeated — no reward, just the glory)",
+    "boss.chooseOther": "→ Choose another boss from the list.",
+    "boss.blackbeltWon": "🖤 BLACK BELT EARNED — your certificate awaits in your Profile!",
+    "boss.blackbeltToast": "🖤 Black Belt Certificate unlocked → Profile",
+    "boss.timeout": "⏰ Time's up! {taunt}",
+    "boss.heartsLeft": "You have {hearts} left — the phase restarts.",
+    "boss.ko": "💀 K.O. — {name} defeated you.",
+    "boss.koTaunt": "\"Come back when you're faster.\"",
+    "boss.retry": "⚔️ Retry the fight",
+    "boss.hintReveal": "💡 {hint}",
+    "boss.lockedTag": "Beat {n} bosses to unlock the exam",
+    "boss.metaPhases": "⚔️ {n} phases",
+    "boss.doneChip": "✓ defeated",
+    "boss.achDefeated": "{name} defeated!",
+    "boss.achAgain": "Defeated again. Ruthless.",
 
     // ── Profile ──
     "profile.cert": "🖤 Black Belt Certificate",
@@ -678,6 +730,29 @@ function overlayIndexed(arr, ovArr, fields) {
 
 // Locale de formatage des dates selon la langue courante (toLocaleDateString).
 function dateLocale() { return LANG === "en" ? "en-US" : "fr-FR"; }
+
+// Applique un overlay EN sur BOSS_FIGHTS (boss.js). `byId` indexé par id de
+// boss : { name, tagline, story, winText, taunts:[...], phases:[{title,desc,hint}] }.
+// Les phases sont fusionnées par index (title/desc/hint). fs/check/timeLimit
+// restent partagés. overlayBosses n'agit que si LANG === "en".
+function overlayBosses(byId) {
+  if (LANG !== "en" || typeof BOSS_FIGHTS === "undefined") return;
+  for (const b of BOSS_FIGHTS) {
+    const ov = byId[b.id];
+    if (!ov) continue;
+    for (const f of ["name", "tagline", "story", "winText"]) _ov(b, f, ov[f]);
+    if (Array.isArray(ov.taunts) && Array.isArray(b.taunts)) {
+      ov.taunts.forEach((tt, i) => { if (tt != null && b.taunts[i] != null) b.taunts[i] = tt; });
+    }
+    if (Array.isArray(ov.phases) && Array.isArray(b.phases)) {
+      ov.phases.forEach((po, i) => {
+        const ph = b.phases[i];
+        if (!po || !ph) return;
+        for (const f of ["title", "desc", "hint"]) _ov(ph, f, po[f]);
+      });
+    }
+  }
+}
 
 // ── Changement de langue ────────────────────────────────────────
 function setLang(l) {

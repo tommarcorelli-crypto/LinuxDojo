@@ -72,9 +72,12 @@ function load(navLang) {
     read("js/i18n/kata.en.js") + "\n" +
     read("js/daily.js") + "\n" +
     read("js/i18n/daily.en.js") + "\n" +
+    read("js/boss.js") + "\n" +
+    read("js/i18n/boss.en.js") + "\n" +
     "var __EXPORTS__ = { CHAPTERS, LEVELS_EN, QUIZZES, QUIZZES_EN, GLOSSARY, GLOSSARY_EN, glossCat, " +
     "CHALLENGES, CHALLENGES_EN, BANDIT_LEVELS, BANDIT_LEVELS_EN, EXPERT_MISSIONS, EXPERT_MISSIONS_EN, " +
-    "OBJECTIVES, OBJECTIVES_EN, SEASONAL_EVENTS, SEASONAL_EVENTS_EN, KATAS, KATAS_EN, DAILY_POOL, DAILY_POOL_EN, LANG };\n";
+    "OBJECTIVES, OBJECTIVES_EN, SEASONAL_EVENTS, SEASONAL_EVENTS_EN, KATAS, KATAS_EN, DAILY_POOL, DAILY_POOL_EN, " +
+    "BOSS_FIGHTS, BOSS_FIGHTS_EN, LANG };\n";
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox, { filename: "levels-i18n-bundle.js" });
   return sandbox.__EXPORTS__;
@@ -344,6 +347,30 @@ test("LANG=en : katas et défis du jour traduits (name/desc, title/desc), FR int
   const fr = load("fr-FR");
   assertEqual(fr.KATAS.find(k => k.id === "bases").name, "Les Fondamentaux", "kata reste FR");
   assert(/premier commit/.test(fr.KATAS.find(k => k.id === "git").cmds[3]), "kata Git FR : commit inchangé");
+});
+
+test("LANG=en : boss traduits (name/story/taunts/winText + phases), FR intact", () => {
+  const en = load("en-US");
+  const kraken = en.BOSS_FIGHTS.find(b => b.id === "kraken");
+  assertEqual(kraken.name, "The Kraken of Logs", "boss kraken name EN");
+  assert(/tentacle/i.test(kraken.phases[0].desc) || /biggest file/i.test(kraken.phases[0].desc), "phase 1 desc EN");
+  assert(en.BOSS_FIGHTS.find(b => b.id === "sensei").phases[4].desc.includes("peur"), "épreuve 5 garde 'peur' (mot du fichier)");
+  const fr = load("fr-FR");
+  assertEqual(fr.BOSS_FIGHTS.find(b => b.id === "kraken").name, "Le Kraken des Logs", "boss reste FR");
+});
+
+test("complétude : chaque boss + chaque phase a un overlay EN (name/story/winText/phases)", () => {
+  const { BOSS_FIGHTS, BOSS_FIGHTS_EN } = load("fr-FR");
+  const problems = [];
+  for (const b of BOSS_FIGHTS) {
+    const ov = BOSS_FIGHTS_EN[b.id];
+    if (!ov) { problems.push("boss " + b.id); continue; }
+    for (const f of ["name", "tagline", "story", "winText"]) if (!ov[f]) problems.push(b.id + "." + f);
+    if (!Array.isArray(ov.taunts) || ov.taunts.length !== b.taunts.length) problems.push(b.id + ".taunts");
+    if (!Array.isArray(ov.phases) || ov.phases.length !== b.phases.length) { problems.push(b.id + ".phases(len)"); continue; }
+    ov.phases.forEach((p, i) => { if (!p.title || !p.desc || !p.hint) problems.push(b.id + ".phase" + i); });
+  }
+  assert(problems.length === 0, "overlays boss manquants : " + problems.join(", "));
 });
 
 test("complétude : chaque kata et chaque défi du jour a un overlay EN", () => {

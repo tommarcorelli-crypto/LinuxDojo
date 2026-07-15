@@ -479,10 +479,10 @@ class BossMode {
         <div class="boss-card-emoji" style="text-shadow:0 0 18px ${b.color}">${locked ? "🔒" : b.emoji}</div>
         <div class="boss-card-info">
           <div class="boss-card-name">${b.name}</div>
-          <div class="boss-card-tag">${locked ? "Bats " + b.requires + " boss pour débloquer l'examen" : b.tagline}</div>
+          <div class="boss-card-tag">${locked ? t("boss.lockedTag", { n: b.requires }) : b.tagline}</div>
           <div class="boss-card-meta">
-            <span>💥 ${b.hp} HP</span><span>⚔️ ${b.phases.length} phases</span><span>✨ ${b.xp} XP</span>
-            ${done ? '<span class="boss-done-chip">✓ vaincu</span>' : ""}
+            <span>💥 ${b.hp} HP</span><span>${t("boss.metaPhases", { n: b.phases.length })}</span><span>✨ ${b.xp} XP</span>
+            ${done ? '<span class="boss-done-chip">' + t("boss.doneChip") + '</span>' : ""}
           </div>
         </div>`;
       if (!locked) card.addEventListener("click", () => this.startFight(b.id));
@@ -494,20 +494,20 @@ class BossMode {
     this.arenaEl.classList.add("boss-idle");
     this.avatarEl.textContent = "⚔️";
     this.avatarEl.style.filter = "none";
-    this.nameEl.textContent = "Salle des Boss";
+    this.nameEl.textContent = t("boss.idleName");
     this.nameEl.style.color = "";
-    this.tagEl.textContent = "Choisis ton adversaire. Chaque commande juste inflige des dégâts. Timer écoulé = tu perds un cœur.";
+    this.tagEl.textContent = t("boss.idleTag");
     this.hpFill.style.width = "0%";
     this.hpText.textContent = "";
     this.heartsEl.textContent = "";
     this.phaseEl.textContent = "";
-    this.descEl.innerHTML = "Les boss ne t'attendront pas éternellement...";
+    this.descEl.innerHTML = t("boss.idleDesc");
     this.timerFill.style.width = "0%";
     this.timerLbl.textContent = "";
     this.hintText.style.display = "none";
     this.hintBtn.style.display = "none";
     this.term.clear();
-    this.term.printInfo("⚔️  SALLE DES BOSS — sélectionne un adversaire pour engager le combat.");
+    this.term.printInfo(t("boss.idleTerm"));
   }
 
   startFight(id) {
@@ -528,7 +528,7 @@ class BossMode {
     this.tagEl.textContent = b.story;
 
     this.term.clear();
-    this.term.printInfo("⚔️  " + b.name.toUpperCase() + " apparaît !");
+    this.term.printInfo(t("boss.appears", { name: b.name.toUpperCase() }));
     this.term.printWarn(b.tagline);
     this.term.printOut("");
     if (typeof SFX !== "undefined") SFX.glitch();
@@ -548,17 +548,17 @@ class BossMode {
     this.term.loadFS(ph.fs || {});
     if (ph.envVars) this.term._envVars = { ...ph.envVars };
 
-    this.phaseEl.textContent = "Phase " + (idx + 1) + "/" + b.phases.length + " — " + ph.title;
+    this.phaseEl.textContent = t("boss.phaseLabel", { n: idx + 1, total: b.phases.length, title: ph.title });
     this.descEl.innerHTML = ph.desc;
     this.hintBtn.style.display = "";
-    this.hintBtn.innerHTML = "💡 Indice <span class='cost'>−" + (b.id === "sensei" ? 25 : 10) + " XP</span>";
+    this.hintBtn.innerHTML = t("boss.hintBtn", { cost: b.id === "sensei" ? 25 : 10 });
     this.hintText.style.display = "none";
     this.hintText.textContent = "";
 
     this._updateHP();
     this._updateHearts();
     this.term.printSep();
-    this.term.printInfo("▶ Phase " + (idx + 1) + "/" + b.phases.length + " : " + ph.title);
+    this.term.printInfo(t("boss.phaseStart", { n: idx + 1, total: b.phases.length, title: ph.title }));
     this.term.printOut("");
     this._startTimer(ph.timeLimit || 60);
     this.inputEl.focus();
@@ -596,7 +596,7 @@ class BossMode {
       const r = this.avatarEl.getBoundingClientRect();
       burstParticles(r.left + r.width/2, r.top + r.height/2);
     }
-    this.term.printOk("💥 TOUCHÉ ! " + b.name + " perd " + dmg + " HP !");
+    this.term.printOk(t("boss.hit", { name: b.name, dmg: dmg }));
 
     if (this.phaseIdx < b.phases.length - 1) {
       setTimeout(() => this._loadPhase(this.phaseIdx + 1), 1000);
@@ -622,26 +622,26 @@ class BossMode {
     if (typeof SFX !== "undefined") SFX.levelup();
 
     this.term.printSep();
-    this.term.printOk("🏆 " + b.name.toUpperCase() + " EST VAINCU !");
+    this.term.printOk(t("boss.defeated", { name: b.name.toUpperCase() }));
     this.term.printOut(b.winText);
     if (first) {
-      this.term.printOk("✨ +" + b.xp + " XP");
+      this.term.printOk(t("boss.xpGain", { xp: b.xp }));
       if (typeof addXP === "function") addXP(b.xp);
     } else {
-      this.term.printInfo("(déjà vaincu — pas de récompense, juste la gloire)");
+      this.term.printInfo(t("boss.alreadyDone"));
     }
     this.term.printOut("");
-    this.term.printInfo("→ Choisis un autre boss dans la liste.");
+    this.term.printInfo(t("boss.chooseOther"));
 
     if (typeof showAchievement === "function") {
-      showAchievement(b.emoji, b.name + " vaincu !", first ? "+" + b.xp + " XP" : "Encore vaincu. Impitoyable.");
+      showAchievement(b.emoji, t("boss.achDefeated", { name: b.name }), first ? "+" + b.xp + " XP" : t("boss.achAgain"));
     }
     // Ceinture Noire : le Sensei délivre le certificat
     if (b.id === "sensei") {
       this.term.printOut("");
-      this.term.printOk("🖤 CEINTURE NOIRE OBTENUE — ton certificat t'attend dans le Profil !");
+      this.term.printOk(t("boss.blackbeltWon"));
       setTimeout(() => {
-        if (typeof showToast === "function") showToast("🖤 Certificat de Ceinture Noire débloqué → Profil");
+        if (typeof showToast === "function") showToast(t("boss.blackbeltToast"));
         if (typeof renderCertificate === "function") renderCertificate();
       }, 1400);
     }
@@ -668,12 +668,12 @@ class BossMode {
     if (typeof SFX !== "undefined") SFX.error();
 
     const taunt = b.taunts[Math.floor(Math.random() * b.taunts.length)];
-    this.term.printErr("⏰ Temps écoulé ! " + taunt);
+    this.term.printErr(t("boss.timeout", { taunt: taunt }));
 
     if (this.hearts <= 0) {
       this._defeat();
     } else {
-      this.term.printWarn("Il te reste " + "❤️".repeat(this.hearts) + " — la phase recommence.");
+      this.term.printWarn(t("boss.heartsLeft", { hearts: "❤️".repeat(this.hearts) }));
       const ph = b.phases[this.phaseIdx];
       this.term.loadFS(ph.fs || {});
       if (ph.envVars) this.term._envVars = { ...ph.envVars };
@@ -688,13 +688,13 @@ class BossMode {
     this.timerFill.style.width = "0%";
 
     this.term.printSep();
-    this.term.printErr("💀 K.O. — " + b.name + " t'a terrassé.");
-    this.term.printOut("« Reviens quand tu seras plus rapide. »");
+    this.term.printErr(t("boss.ko", { name: b.name }));
+    this.term.printOut(t("boss.koTaunt"));
     this.term.printOut("");
 
     const retry = document.createElement("button");
     retry.className = "btn-primary";
-    retry.textContent = "⚔️ Réessayer le combat";
+    retry.textContent = t("boss.retry");
     retry.style.margin = "8px 0";
     retry.addEventListener("click", () => this.startFight(b.id));
     this.termEl.appendChild(retry);
@@ -715,7 +715,7 @@ class BossMode {
     if (!this.boss || this.over) return;
     const ph = this.boss.phases[this.phaseIdx];
     this.hintText.style.display = "inline";
-    this.hintText.textContent = "💡 " + ph.hint;
+    this.hintText.textContent = t("boss.hintReveal", { hint: ph.hint });
     if (!this.hintUsed) {
       this.hintUsed = true;
       const cost = this.boss.id === "sensei" ? 25 : 10;
