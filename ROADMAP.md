@@ -356,18 +356,62 @@ que si vraiment décidé, car ils engagent sur la durée (maintenance double, ba
 Section de capture rapide — une idée qui arrive en cours de discussion atterrit ici en
 premier, avant d'être rangée dans la bonne phase au prochain passage sur ce fichier.
 
-*(Idées consignées le 2026-07-16 — nouveaux territoires identifiés en auditant les commandes
-que le terminal simulé ne couvre pas encore : `systemctl`, `crontab`, `useradd`, `ip`, `dig`,
-`top`… De quoi nourrir plusieurs scénarios.)*
+*(2e fournée consignée le 2026-07-17 — idées débloquées par le nouveau socle moteur :
+services systemd, utilisateurs/su, cron, réseau simulé et permissions réellement
+appliquées. Classées par potentiel perçu.)*
 
-**Nouveaux scénarios (contenu) :**
-- [ ] *(les 4 scénarios identifiés le 2026-07-16 — services, utilisateurs, cron, réseau —
-      sont tous livrés ; prochaine fournée d'idées bienvenue ici)*
+**⭐ Les grosses idées (fort potentiel) :**
+- [ ] **🚑 Salle d'astreinte — incidents aléatoires générés** : un mode où le moteur
+      GÉNÈRE un incident au hasard (service tombé, port squatté, permission cassée,
+      cron saboteuse, DNS menteur, disque « plein »…) et le joueur doit diagnostiquer
+      SANS leçon ni indication, comme une vraie astreinte. Rejouable à l'infini, score
+      au temps. C'est LA killer feature que le socle actuel rend possible : tous les
+      ingrédients (services, cron, users, réseau, permissions) existent déjà — il ne
+      manque que le générateur et l'habillage. Candidat n°1 de la prochaine session.
+- [ ] **sudo simulé** — suite logique directe des permissions appliquées + utilisateurs :
+      `sudo cat /etc/shadow` fonctionnerait si l'utilisateur est dans le groupe sudo
+      (et sarah fraîchement ajoutée aussi !), refusé sinon avec le vrai message.
+      Donnerait un SENS mécanique au groupe sudo du scénario 12, et permettrait des
+      missions « élévation de privilèges » légitimes (et un pont vers rootQuest).
+- [ ] **Éditeur nano simulé** — aujourd'hui le jeu ne sait PAS éditer un fichier (tout
+      passe par echo/sed). Un mini-nano (ouvrir, modifier des lignes, Ctrl+O/Ctrl+X)
+      débloquerait toute une classe de missions impossibles actuellement : « corrige
+      la config nginx », « répare la crontab », « commente la ligne fautive ». Gros
+      débloqueur pédagogique, effort moyen (un mode plein écran dans le terminal).
+- [ ] **Scénarios communautaires en JSON (sans backend)** — version légère de
+      l'« éditeur de missions » des gros chantiers : un format JSON documenté +
+      import/export par fichier ou par URL (gist). Les profs/créateurs partagent leurs
+      scénarios sur le Discord, zéro serveur à opérer. Marchepied idéal avant le vrai
+      éditeur communautaire.
+
+**Cohérence du contenu (dette à rattraper suite aux scénarios 11-14) :**
+- [ ] **Glossaire : catégorie « Administration »** — les ~12 nouvelles commandes
+      (systemctl, journalctl, crontab, useradd, passwd, usermod, groups, su, ip, dig,
+      nslookup, curl -I) ne sont PAS dans le glossaire (62 commandes) ni dans `man`.
+      À combler pour que la référence reste complète.
+- [ ] **Katas 8-9** — mémoire musculaire des scénarios récents : un kata « incident
+      systemd » (status/journalctl/stop/start/enable) et un kata « admin users/cron ».
+- [ ] **Nouveaux défis chrono** exploitant systemctl/journalctl/crontab/dig (les 20
+      défis actuels s'arrêtent aux commandes classiques).
+
+**Rejouabilité / motivation :**
+- [ ] **Ceintures intermédiaires téléchargeables** — pas que la Noire : ceinture
+      jaune/orange/verte/marron aux paliers de progression, en PNG partageable comme
+      le certificat. Chaque palier devient un petit événement à poster (viralité douce,
+      le moteur canvas du certificat est réutilisable tel quel).
+- [ ] **Boss Rush** — enchaîner les 7 boss d'affilée sans perdre ses cœurs, chrono
+      global, record local. Contenu 100 % existant, juste un mode d'enchaînement.
+- [ ] **Mode Histoire** — une trame narrative continue reliant les 14 scénarios (tu es
+      le nouvel admin de la boîte, chaque scénario = une semaine de plus, avec des
+      personnages récurrents — Sarah du scénario 12 revient, le ticket #4213…).
+      Réécriture légère des intros de scénarios, gros gain d'immersion.
 
 **Profondeur du moteur :**
-- [ ] **SSH multi-machines** — mini-réseau de 2-3 machines ayant chacune son FS, `ssh` saute
-      réellement de l'une à l'autre (prompt/hostname changent, `exit` revient). Transformerait
-      le scénario 9 et ouvrirait des niveaux d'infiltration « pivoting ».
+- [ ] **SSH multi-machines** — mini-réseau de 2-3 machines ayant chacune son FS, ses
+      services et ses utilisateurs ; `ssh` saute réellement de l'une à l'autre
+      (FS échangé, prompt/hostname changent, `exit` revient, `scp` copie vraiment
+      entre machines). Transformerait le scénario 9 et ouvrirait des niveaux
+      d'infiltration « pivoting ». Chantier moteur du calibre des permissions.
 
 **Nouveaux modes / contenu des modes :**
 - [ ] **Mode Examen blanc** — 20 questions/missions tirées au hasard dans tout le programme,
