@@ -6,6 +6,10 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 ## [Non publié]
 
 ### Ajouté
+- **Serveur Discord communautaire** — invitation permanente (https://discord.gg/42NN5ZtzKp)
+  intégrée sur la landing page (bouton ghost dans le CTA final + lien footer), dans la page
+  Profil du jeu (bouton dans les Options) et dans le README. Textes bilingues via les clés
+  `l.cta.discord` / `l.footer.discord` / `profile.discord`. SW v32 → v33.
 - Internationalisation FR / EN — **Phase D (finitions) : la page d'atterrissage + les meta**.
   `landing.html` (page marketing autonome) devient bilingue en réutilisant le même moteur
   `js/i18n.js` : tout le contenu est annoté `data-i18n` / `data-i18n-html`, un sélecteur 🇫🇷/🇬🇧

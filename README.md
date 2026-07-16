@@ -6,6 +6,9 @@ PWA 100 % vanilla JS (zéro dépendance, aucun build requis pour jouer ou contri
 
 **▶ Jouer : https://tommarcorelli.github.io/LinuxDojo/**
 
+**💬 Communauté : [rejoins le Discord](https://discord.gg/42NN5ZtzKp)** — feedback, entraide
+entre joueurs, et annonces des nouveaux scénarios.
+
 Une [page d'atterrissage marketing](landing.html) existe aussi (screenshots-mockup du
 terminal, présentation des modes, chiffres réels du contenu) : utile pour un lien de bio
 ou un post sur les réseaux, pas nécessaire pour jouer directement.
@@ -104,4 +107,5 @@ LinuxDojo/
 ## Contribuer
 
 Voir [`CONTRIBUTING.md`](CONTRIBUTING.md) pour les détails techniques, et [`ROADMAP.md`](ROADMAP.md)
-pour la ligne de route et les idées déjà identifiées.
+pour la ligne de route et les idées déjà identifiées. Pour discuter d'une idée avant de coder,
+le [Discord](https://discord.gg/42NN5ZtzKp) est là pour ça.

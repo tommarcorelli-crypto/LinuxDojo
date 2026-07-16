@@ -211,8 +211,11 @@ Petites choses avec un bon rapport effort/valeur, à faire en premier.
       badges débloqués, badges secrets comptés à part sans être nommés, rang, XP, lien)
       copié ou partagé via la même logique. `AbortError` (fenêtre de partage fermée par
       le joueur) traité comme un non-évènement, pas une erreur.
-- [ ] **Serveur Discord / espace communautaire** — pour centraliser feedback, entraide entre
+- [x] **Serveur Discord / espace communautaire** — pour centraliser feedback, entraide entre
       joueurs, et annonces de nouveaux scénarios
+      → Serveur créé, invitation permanente : https://discord.gg/42NN5ZtzKp. Lien intégré
+      partout où ça compte : landing page (bouton dans le CTA final + footer), page Profil
+      du jeu (bouton dans les Options), README (en-tête + section Contribuer)
 - [x] **Page d'atterrissage dédiée** — actuellement le jeu = la landing page ; une vraie page
       marketing (screenshots, témoignages) avant le `▶ Commencer` pourrait améliorer la conversion
       → `landing.html` + `css/landing.css` (autonome, ne charge pas le CSS complet du jeu pour
