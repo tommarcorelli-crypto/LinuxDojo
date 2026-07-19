@@ -138,6 +138,7 @@ function renderProfile() {
   renderHeatmap();
   renderThemes();
   if (typeof renderCertificate === "function") renderCertificate();
+  if (typeof renderBelts === "function") renderBelts();
   renderErrorLogStatus();
 }
 
@@ -308,8 +309,10 @@ function clearErrorReport() {
 
 function updateNavRank() {
   const rank = getRank(GAME.xp);
+  const badge = document.getElementById("nav-rank");
   const icon = document.querySelector("#nav-rank .rank-icon");
   const name = document.getElementById("nav-rank-name");
+  if (badge) badge.style.setProperty("--rank-color", rank.color);
   if (icon) icon.textContent = rank.icon;
   if (name) { name.textContent = rankName(rank); name.style.color = rank.color; }
 }

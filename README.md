@@ -19,7 +19,8 @@ ou un post sur les réseaux, pas nécessaire pour jouer directement.
 |---|---|
 | 📖 **Apprendre** | 14 scénarios réalistes, 84 missions : leçon → exercice → explication. Quiz de fin de chapitre + révision espacée. Du premier `ls` jusqu'à la réponse à incident, l'**automatisation par scripts**, le **versioning avec Git**, l'**administration distante en SSH**, la **conteneurisation avec Docker**, la **gestion des services systemd** (`systemctl`/`journalctl`), celle des **utilisateurs & groupes** (`useradd`/`usermod`/`su`), la **planification cron** (`crontab`, syntaxe à 5 champs) et le **diagnostic réseau de bout en bout** (`ip`/`ping`/`dig`/`curl`). Indices à 3 paliers (nudge gratuit → syntaxe → solution) pour ne jamais rester bloqué. Plus un **Mode Expert** (8 missions sans indices) pour ceux qui ont tout terminé. |
 | 🗺 **Explorer** | Monde ouvert navigable en commandes : inventaire, PNJ, portes verrouillées, 3 gemmes à réunir. |
-| ⚡ **Défis** | 20 défis chrono avec combo ×5 et record. |
+| ⚡ **Défis** | 24 défis chrono avec combo ×5 et record. |
+| 🚨 **Salle d'astreinte** | Incidents générés au hasard (service en échec, cron cassée, permission perdue, groupe sudo manquant, disque qui sature…), à diagnostiquer et réparer SANS leçon ni indice, rejouable à l'infini. Score au temps, record et série persistés. |
 | 🔐 **Infiltration** | 15 niveaux style OverTheWire/Bandit : fouille, filtre, décode (base64, ROT13, hex, double encodage). |
 | ⚔️ **Salle des Boss** | 7 combats épiques en phases : le Kraken des Logs, le Spectre Invisible, l'Hydre des Données, le Golem Binaire, le Gardien des Serrures, le Daemon Zombie… et l'Examen de la Ceinture Noire. HP, cœurs, chrono. Battre le Sensei débloque un **certificat téléchargeable** (PNG). |
 | 🥋 **Kata** | La mémoire musculaire du shell : 7 enchaînements de vraies commandes à taper au chrono. Mesure WPM et précision, garde tes records. |
@@ -33,7 +34,7 @@ ou un post sur les réseaux, pas nécessaire pour jouer directement.
 
 **Un vrai mini-shell** : variables (`x=5`, `echo $x`, `"$x"` vs `'$x'`), substitution de commande `$(…)`, boucles `for … in … ; do … done`, conditions `if [ -f x ]; then … else … fi`, `test`/`[ ]`, `while`, `seq`, `$?`, et exécution de scripts avec `bash script.sh` ou `./script.sh`. Multi-ligne géré (le prompt passe à `>` en attendant `done`/`fi`).
 
-Navigation (`ls`, `cd`, `pwd`, `tree`, `find`), fichiers (`cat`, `head`, `tail`, `touch`, `mkdir`, `cp`, `mv`, `rm`, `chmod`, `chown`, `chgrp`), texte (`grep`, `sort`, `uniq`, `wc`, `cut`, `tr`, `sed`, `awk`, `diff`), système (`ps`, `kill`, `df`, `du`, `free`, `uptime`, `uname`, `date`, `history`, `env`, `export`, `alias`, `jobs`, `fg`, `xargs`), services (`systemctl status/start/stop/enable`, `journalctl -u`), utilisateurs (`useradd -m`, `passwd`, `usermod -aG`, `groups`, `id`, `su`/`exit`), planification (`crontab` -l/-r/fichier), réseau (`ip a/r`, `ping`, `dig`, `nslookup`, `curl -I`, `netstat`), décodage (`base64`, `rot13`, `xxd`), versioning (`git init/add/commit/log/branch/checkout/status`), aide (`man`, `whatis`, `help`)…
+Navigation (`ls`, `cd`, `pwd`, `tree`, `find`), fichiers (`cat`, `head`, `tail`, `touch`, `mkdir`, `cp`, `mv`, `rm`, `chmod`, `chown`, `chgrp`, `nano`), texte (`grep`, `sort`, `uniq`, `wc`, `cut`, `tr`, `sed`, `awk`, `diff`), système (`ps`, `kill`, `df`, `du`, `free`, `uptime`, `uname`, `date`, `history`, `env`, `export`, `alias`, `jobs`, `fg`, `xargs`), services (`systemctl status/start/stop/enable`, `journalctl -u`), utilisateurs (`useradd -m`, `passwd`, `usermod -aG`, `groups`, `id`, `su`/`exit`, `sudo`), planification (`crontab` -l/-r/fichier), réseau (`ip a/r`, `ping`, `dig`, `nslookup`, `curl -I`, `netstat`), décodage (`base64`, `rot13`, `xxd`), versioning (`git init/add/commit/log/branch/checkout/status`), aide (`man`, `whatis`, `help`)…
 
 Pipes `|`, redirections `>` et `>>`, jokers `*.txt` (même en sous-dossier : `ls logs/*.log`), autocomplétion Tab qui suit les chemins, historique ↑/↓, prompt qui affiche le dossier courant, messages d'erreur pédagogiques avec suggestions de typos.
 
@@ -65,10 +66,11 @@ Le simulateur de shell (`js/terminal.js`) a une suite de tests unitaires (Node, 
 node tests/terminal.test.js
 ```
 
-47 tests couvrant navigation/fichiers, pipes & redirections, jokers, variables & substitution
+103 tests couvrant navigation/fichiers, pipes & redirections, jokers, variables & substitution
 de commande, scripting (`for`/`if`/`bash`), permissions (`chmod`/`chown`/`chgrp`), les utilitaires
 (`alias`, `xargs`, `diff`, jobs en arrière-plan), le réseau (`ssh`/`scp`/`netstat`), la simulation
-Git, et les cas limites (commande inconnue, fichier absent, `rm -rf /`). Si un test casse après une
+Git, `sudo` (élévation ponctuelle vers root), l'éditeur `nano` (édition ligne par ligne), et les
+cas limites (commande inconnue, fichier absent, `rm -rf /`). Si un test casse après une
 modification du terminal, c'est probablement une vraie régression à corriger avant de livrer.
 
 ## Structure du projet
@@ -95,7 +97,7 @@ LinuxDojo/
 │   ├── glossary.js       référence des commandes (man)
 │   ├── game.js           état global, XP, rangs, badges
 │   ├── gameshell.js       orchestration UI
-│   ├── bandit.js / boss.js / kata.js / challenges.js / daily.js   modes de jeu
+│   ├── bandit.js / boss.js / kata.js / challenges.js / oncall.js / daily.js   modes de jeu
 │   ├── certificate.js    génération du certificat PNG
 │   ├── objectives.js / profile.js / quizzes.js
 │   ├── fx.js             effets visuels/sonores

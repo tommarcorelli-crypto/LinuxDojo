@@ -24,7 +24,7 @@
     { cmd: "./linuxdojo --start", out: 'Loading the dojo... <span class="dim">[██████████] 100%</span>\nReady. Click ▶ Start to enter.' },
   ] : [
     { cmd: "whoami", out: "visiteur" },
-    { cmd: "cat programme.txt", out: "84 missions · 7 combats de boss · 15 niveaux d'infiltration\n20 défis chrono · 1 certificat de Ceinture Noire" },
+    { cmd: "cat programme.txt", out: "84 missions · 7 combats de boss · 15 niveaux d'infiltration\n24 défis chrono · 1 certificat de Ceinture Noire" },
     { cmd: "./linuxdojo --demarrer", out: 'Chargement du dojo... <span class="dim">[██████████] 100%</span>\nPrêt. Clique sur ▶ Commencer pour entrer.' },
   ];
 

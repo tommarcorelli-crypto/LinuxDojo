@@ -38,6 +38,16 @@ const KATAS = [
     desc: "Le versioning dans les doigts.",
     cmds: ["git init", "git status", "git add .", "git commit -m \"premier commit\"", "git log", "git branch feature", "git checkout -b hotfix", "git checkout main"],
   },
+  {
+    id: "systemd", name: "Incident systemd", emoji: "🚨", color: "#eab308",
+    desc: "Diagnostiquer et relancer un service, sans trembler.",
+    cmds: ["systemctl status nginx", "journalctl -u nginx -n 20", "systemctl stop nginx", "systemctl start nginx", "systemctl restart nginx", "systemctl enable nginx", "systemctl list-units --type=service", "journalctl -u nginx"],
+  },
+  {
+    id: "admin", name: "Administration", emoji: "🗝️", color: "#ef4444",
+    desc: "Créer un compte, lui donner des droits, planifier une tâche.",
+    cmds: ["useradd -m sarah", "passwd sarah", "usermod -aG sudo sarah", "groups sarah", "su sarah", "crontab -l", "crontab taches.cron", "crontab -r"],
+  },
 ];
 
 const KATA_BEST_KEY = "linuxdojo_kata_best";

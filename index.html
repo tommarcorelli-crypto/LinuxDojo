@@ -44,6 +44,7 @@
       <button class="nav-btn" data-page="learn" data-i18n="nav.learn">Apprendre</button>
       <button class="nav-btn" data-page="explore" data-i18n="nav.explore">Explorer</button>
       <button class="nav-btn" data-page="challenge" data-i18n="nav.challenge">Défis</button>
+      <button class="nav-btn" data-page="oncall" data-i18n="nav.oncall">🚨 Astreinte</button>
       <button class="nav-btn" data-page="bandit" data-i18n="nav.bandit">Infiltration</button>
       <button class="nav-btn nav-btn-boss" data-page="boss" data-i18n="nav.boss">⚔️ Boss</button>
       <button class="nav-btn" data-page="kata" data-i18n="nav.kata">🥋 Kata</button>
@@ -90,49 +91,55 @@
     </div>
 
     <div class="home-modes">
-      <div class="mode-card" data-page="learn">
+      <div class="mode-card" data-page="learn" data-accent="purple" style="--i:0">
         <div class="mode-icon">📖</div>
         <h3 data-i18n="mode.learn.title">Apprendre</h3>
         <p data-i18n="mode.learn.desc">Leçons + scénarios réels. Tu comprends pourquoi avant de taper.</p>
         <div class="mode-tag" data-i18n="mode.learn.tag">14 scénarios · 84 missions</div>
       </div>
-      <div class="mode-card" data-page="explore">
+      <div class="mode-card" data-page="explore" data-accent="cyan" style="--i:1">
         <div class="mode-icon">🗺</div>
         <h3 data-i18n="mode.explore.title">Explorer</h3>
         <p data-i18n="mode.explore.desc">Un monde ouvert : inventaire, PNJ, portes verrouillées. Réunis les 3 gemmes.</p>
         <div class="mode-tag" data-i18n="mode.explore.tag">18 zones · Aventure</div>
       </div>
-      <div class="mode-card" data-page="challenge">
+      <div class="mode-card" data-page="challenge" data-accent="yellow" style="--i:2">
         <div class="mode-icon">⚡</div>
         <h3 data-i18n="mode.challenge.title">Défis</h3>
         <p data-i18n="mode.challenge.desc">Un problème, une commande, un chrono. Enchaîne pour un combo jusqu'à x5.</p>
-        <div class="mode-tag" data-i18n="mode.challenge.tag">20 défis · Combo & record</div>
+        <div class="mode-tag" data-i18n="mode.challenge.tag">24 défis · Combo & record</div>
       </div>
-      <div class="mode-card" data-page="bandit">
+      <div class="mode-card" data-page="bandit" data-accent="green" style="--i:3">
         <div class="mode-icon">🔐</div>
         <h3 data-i18n="mode.bandit.title">Infiltration</h3>
         <p data-i18n="mode.bandit.desc">Trouve le mot de passe caché. Fouille, filtre, et décode (base64, ROT13, hex).</p>
         <div class="mode-tag" data-i18n="mode.bandit.tag">Style Bandit · 15 niveaux</div>
       </div>
-      <div class="mode-card mode-card-boss" data-page="boss">
+      <div class="mode-card mode-card-boss" data-page="boss" data-accent="red" style="--i:4">
         <div class="mode-icon">⚔️</div>
         <h3 data-i18n="mode.boss.title">Salle des Boss</h3>
         <p data-i18n="mode.boss.desc">Affronte le Kraken, le Spectre, l'Hydre, le Golem… et le Sensei. HP, cœurs, chrono.</p>
         <div class="mode-tag" data-i18n="mode.boss.tag">7 boss · Ceinture Noire</div>
       </div>
-      <div class="mode-card" data-page="kata">
+      <div class="mode-card" data-page="kata" data-accent="blue" style="--i:5">
         <div class="mode-icon">🥋</div>
         <h3 data-i18n="mode.kata.title">Kata</h3>
         <p data-i18n="mode.kata.desc">La mémoire musculaire du shell : tape des enchaînements de commandes au chrono. WPM & précision.</p>
-        <div class="mode-tag" data-i18n="mode.kata.tag">7 katas · Vitesse & record</div>
+        <div class="mode-tag" data-i18n="mode.kata.tag">9 katas · Vitesse & record</div>
       </div>
-      <div class="mode-card" data-page="sandbox">
+      <div class="mode-card" data-page="oncall" data-accent="orange" style="--i:6">
+        <div class="mode-icon">🚨</div>
+        <h3 data-i18n="mode.oncall.title">Salle d'astreinte</h3>
+        <p data-i18n="mode.oncall.desc">Un incident généré au hasard, aucune leçon, aucun indice. Diagnostique et répare comme en vraie astreinte.</p>
+        <div class="mode-tag" data-i18n="mode.oncall.tag">Incidents infinis · Score au temps</div>
+      </div>
+      <div class="mode-card" data-page="sandbox" data-accent="cyan" style="--i:7">
         <div class="mode-icon">🧪</div>
         <h3 data-i18n="mode.sandbox.title">Bac à sable</h3>
         <p data-i18n="mode.sandbox.desc">Un terminal libre, sans objectif. Teste toutes les commandes tranquillement.</p>
         <div class="mode-tag" data-i18n="mode.sandbox.tag">Libre · Toutes commandes</div>
       </div>
-      <div class="mode-card" data-page="profile">
+      <div class="mode-card" data-page="profile" data-accent="purple" style="--i:8">
         <div class="mode-icon">👤</div>
         <h3 data-i18n="mode.profile.title">Profil</h3>
         <p data-i18n="mode.profile.desc">Ta progression, tes 8 rangs, tes badges et tes commandes préférées.</p>
@@ -284,6 +291,39 @@
     </div>
   </div>
 
+  <!-- ══ PAGE SALLE D'ASTREINTE (incidents aléatoires) ═════════ -->
+  <div id="page-oncall" class="page">
+    <div id="oncall-layout">
+      <div id="oncall-header">
+        <div class="oncall-meta">
+          <span id="oncall-icon">🚨</span>
+          <span id="oncall-title"></span>
+        </div>
+        <div id="oncall-stats">
+          <span id="oncall-streak"></span>
+          <span id="oncall-best"></span>
+          <span id="oncall-score">Score : 0</span>
+        </div>
+      </div>
+      <div id="oncall-timer-wrap">
+        <div id="oncall-timer-bar"><div id="oncall-timer-fill"></div></div>
+        <span id="oncall-timer-label">0s</span>
+      </div>
+      <div id="oncall-brief-box">
+        <p id="oncall-brief"></p>
+      </div>
+      <div id="oncall-terminal" role="log" aria-live="polite"></div>
+      <div id="oncall-input-bar">
+        <span class="oncall-prompt">user@astreinte:~$</span>
+        <input id="oncall-cmd" type="text" autocomplete="off" spellcheck="false" placeholder="tape ta commande..." data-i18n-attr="placeholder:challenge.placeholder;aria-label:term.cmdAria" aria-label="Ligne de commande du terminal">
+        <button id="oncall-run" data-i18n-attr="aria-label:term.runAria" aria-label="Exécuter la commande">↵</button>
+      </div>
+      <div id="oncall-nav">
+        <button class="btn-ghost" id="oncall-skip" data-i18n="oncall.skip">Nouvel incident →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ PAGE INFILTRATION (Bandit-style) ════════════════════ -->
   <div id="page-bandit" class="page">
     <div id="bandit-layout">
@@ -319,6 +359,17 @@
           <h2 data-i18n="boss.roomTitle">⚔️ Salle des Boss</h2>
           <p data-i18n-html="boss.roomIntro">Chaque commande juste inflige des dégâts.<br>Timer écoulé = tu perds un cœur. 3 cœurs, pas un de plus.</p>
         </div>
+        <div id="boss-rush-panel">
+          <div id="boss-rush-panel-head">
+            <span id="boss-rush-panel-emoji">🏆</span>
+            <div id="boss-rush-panel-text">
+              <div id="boss-rush-panel-title" data-i18n="bossrush.title">🏆 Boss Rush</div>
+              <p id="boss-rush-panel-desc" data-i18n="bossrush.desc">Enchaîne les 7 boss d'affilée. 3 cœurs pour tout le parcours, pas un par combat. Chrono au meilleur temps.</p>
+            </div>
+          </div>
+          <div id="boss-rush-panel-record"></div>
+          <button id="boss-rush-start" class="btn-primary" data-i18n="bossrush.start">🏁 Lancer le Rush</button>
+        </div>
         <div id="boss-list"></div>
       </div>
       <div id="boss-right">
@@ -331,6 +382,7 @@
               <div id="boss-hpbar"><div id="boss-hpfill"></div><span id="boss-hptext"></span></div>
             </div>
             <div id="boss-player-panel">
+              <div id="boss-rush-badge" style="display:none"></div>
               <div id="boss-hearts"></div>
               <button class="btn-ghost" id="boss-flee" data-i18n="boss.flee">🏃 Fuir</button>
             </div>
@@ -380,6 +432,7 @@
       <div class="profile-rings" id="pf-rings"></div>
 
       <div class="profile-section-title" data-i18n="profile.cert">🖤 Certificat de Ceinture Noire</div>
+      <div id="pf-belts"></div>
       <div id="pf-cert"></div>
 
       <div class="profile-section-title"><span data-i18n="profile.objectives">🎯 Objectifs</span> <span class="obj-count" id="pf-obj-count"></span></div>
@@ -570,6 +623,7 @@
   <script src="js/i18n/world.en.js"></script>
   <script src="js/challenges.js"></script>
   <script src="js/i18n/challenges.en.js"></script>
+  <script src="js/oncall.js"></script>
   <script src="js/bandit.js"></script>
   <script src="js/i18n/bandit.en.js"></script>
   <script src="js/boss.js"></script>

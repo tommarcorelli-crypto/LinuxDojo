@@ -25,7 +25,29 @@ function senseiDefeated() {
   catch { return false; }
 }
 
-// ── Dessin ────────────────────────────────────────────────────────
+// ── Ceintures intermédiaires (paliers de rang, avant la Noire) ─────
+// 7 paliers, calés sur les seuils de RANKS[0..6] (Bleu → Root) ; la
+// Ceinture Noire reste liée à la victoire sur le Sensei (senseiDefeated()),
+// pas à un seuil d'XP — c'est un aboutissement, pas juste un palier de plus.
+const BELTS = [
+  { id: "blanche",  min: 0,    name: { fr: "Ceinture Blanche",  en: "White Belt"  }, color: "#e2e8f0" },
+  { id: "jaune",    min: 100,  name: { fr: "Ceinture Jaune",    en: "Yellow Belt" }, color: "#eab308" },
+  { id: "orange",   min: 250,  name: { fr: "Ceinture Orange",   en: "Orange Belt" }, color: "#f97316" },
+  { id: "verte",    min: 500,  name: { fr: "Ceinture Verte",    en: "Green Belt"  }, color: "#16a34a" },
+  { id: "bleue",    min: 800,  name: { fr: "Ceinture Bleue",    en: "Blue Belt"   }, color: "#3b82f6" },
+  { id: "violette", min: 1200, name: { fr: "Ceinture Violette", en: "Purple Belt" }, color: "#7c3aed" },
+  { id: "marron",   min: 1800, name: { fr: "Ceinture Marron",   en: "Brown Belt"  }, color: "#78350f" },
+];
+function currentXP() { return (typeof GAME !== "undefined" && GAME.xp) || 0; }
+function beltUnlocked(belt) { return currentXP() >= belt.min; }
+
+
+function _isLightColor(hex) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 170;
+}
+
 function _roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -36,8 +58,12 @@ function _roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-// Sceau : ceinture noire nouée dans un double anneau doré
-function _drawSeal(ctx, cx, cy, r) {
+// Sceau : ceinture nouée dans un double anneau doré. `color` paramétrable
+// (noir par défaut, pour le certificat historique de Ceinture Noire) — les
+// ceintures intermédiaires réutilisent ce même sceau avec leur propre couleur.
+function _drawSeal(ctx, cx, cy, r, color) {
+  const sash = color || "#111827";
+  const light = _isLightColor(sash);
   ctx.save();
   // halo
   const halo = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 1.5);
@@ -52,9 +78,10 @@ function _drawSeal(ctx, cx, cy, r) {
   ctx.lineWidth = 2;
   ctx.strokeStyle = "#a78bfa";
   ctx.beginPath(); ctx.arc(cx, cy, r * 0.82, 0, Math.PI * 2); ctx.stroke();
-  // ceinture noire (bande + nœud + pans)
-  ctx.fillStyle = "#111827";
-  ctx.strokeStyle = "#374151";
+  // ceinture (bande + nœud + pans) — contour plus clair si la ceinture est
+  // elle-même claire (blanche/jaune), pour rester lisible sur le fond sombre
+  ctx.fillStyle = sash;
+  ctx.strokeStyle = light ? "#94a3b8" : "#374151";
   ctx.lineWidth = 1.5;
   const bw = r * 1.15, bh = r * 0.32;
   _roundRect(ctx, cx - bw / 2, cy - bh / 2, bw, bh, 4); ctx.fill(); ctx.stroke();
@@ -196,6 +223,173 @@ function buildCertificateCanvas(scale) {
   ctx.fillText(t("cert.footer"), W / 2, H - 46);
 
   return canvas;
+}
+
+// Dessine une ceinture intermédiaire dans un canvas (aperçu réutilisant le
+// même style que le certificat de Ceinture Noire, en plus compact).
+function buildBeltCanvas(belt, scale) {
+  scale = scale || 2;
+  const W = 900, H = 640;
+  const canvas = document.createElement("canvas");
+  canvas.width = W * scale; canvas.height = H * scale;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, "#0b0b16"); bg.addColorStop(0.5, "#140a24"); bg.addColorStop(1, "#0d0d1a");
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  const glow = ctx.createRadialGradient(W / 2, 220, 40, W / 2, 220, 460);
+  glow.addColorStop(0, `${belt.color}33`); glow.addColorStop(1, `${belt.color}00`);
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = belt.color; ctx.lineWidth = 5;
+  _roundRect(ctx, 24, 24, W - 48, H - 48, 16); ctx.stroke();
+  ctx.strokeStyle = "rgba(167,139,250,0.7)"; ctx.lineWidth = 2;
+  _roundRect(ctx, 36, 36, W - 72, H - 72, 10); ctx.stroke();
+  _drawCorner(ctx, 52, 52, 1, 1);
+  _drawCorner(ctx, W - 52, 52, -1, 1);
+  _drawCorner(ctx, 52, H - 52, 1, -1);
+  _drawCorner(ctx, W - 52, H - 52, -1, -1);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#a78bfa";
+  ctx.font = "700 18px 'JetBrains Mono', monospace";
+  ctx.fillText("$_  L I N U X D O J O", W / 2, 78);
+
+  _drawSeal(ctx, W / 2, 172, 58, belt.color);
+
+  ctx.fillStyle = belt.color;
+  ctx.font = "800 40px 'Inter', system-ui, sans-serif";
+  ctx.fillText(pick(belt.name), W / 2, 290);
+
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "400 16px 'Inter', sans-serif";
+  ctx.fillText(t("cert.line1"), W / 2, 322);
+
+  ctx.fillStyle = "#fde68a";
+  ctx.font = "700 36px 'Inter', sans-serif";
+  ctx.fillText(ninjaName(), W / 2, 376);
+  const nameW = Math.min(440, Math.max(180, ctx.measureText(ninjaName()).width + 60));
+  ctx.strokeStyle = "rgba(234,179,8,0.6)"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(W / 2 - nameW / 2, 390); ctx.lineTo(W / 2 + nameW / 2, 390); ctx.stroke();
+
+  const rank = (typeof getRank === "function") ? getRank(currentXP()) : { name: "", icon: "" };
+  const date = new Date().toLocaleDateString(dateLocale(), { day: "numeric", month: "long", year: "numeric" });
+  const stats = [
+    [t("cert.statRank"), rankName(rank)],
+    [t("cert.statXp"), String(currentXP())],
+    [t("belt.statDate"), date],
+  ];
+  const colW = 220, startX = W / 2 - (colW * stats.length) / 2 + colW / 2;
+  stats.forEach((s, i) => {
+    const x = startX + i * colW;
+    ctx.fillStyle = "#64748b";
+    ctx.font = "600 12px 'JetBrains Mono', monospace";
+    ctx.fillText(s[0], x, 466);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "700 20px 'Inter', sans-serif";
+    ctx.fillText(s[1], x, 494);
+  });
+
+  ctx.strokeStyle = "rgba(255,255,255,0.10)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(120, 528); ctx.lineTo(W - 120, 528); ctx.stroke();
+
+  ctx.fillStyle = "#475569"; ctx.font = "400 12px 'JetBrains Mono', monospace";
+  ctx.fillText(t("cert.footer"), W / 2, H - 34);
+
+  return canvas;
+}
+
+function _beltFilename(belt) {
+  return "linuxdojo-" + belt.id + "-" + ninjaName().replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".png";
+}
+
+function downloadBelt(id) {
+  const belt = BELTS.find(b => b.id === id);
+  if (!belt || !beltUnlocked(belt)) return;
+  if (!hasNinjaName()) { setNinjaName(); if (!hasNinjaName()) return; }
+  const canvas = buildBeltCanvas(belt, 2);
+  const link = document.createElement("a");
+  link.download = _beltFilename(belt);
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  if (typeof trackEvent === "function") trackEvent("belt-telecharge-" + belt.id);
+  if (typeof SFX !== "undefined") SFX.levelup();
+}
+
+async function shareBelt(id) {
+  const belt = BELTS.find(b => b.id === id);
+  if (!belt || !beltUnlocked(belt)) return;
+  if (!hasNinjaName()) { setNinjaName(); if (!hasNinjaName()) return; }
+  const text = t("belt.shareText", { name: ninjaName(), belt: pick(belt.name) });
+
+  const fallback = () => {
+    const done = () => { if (typeof showToast === "function") showToast(t("cert.msgCopied")); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => prompt(t("cert.copyMsg"), text));
+    } else {
+      prompt(t("cert.copyMsg"), text);
+    }
+  };
+  if (navigator.share) {
+    try {
+      if (navigator.canShare && typeof File !== "undefined") {
+        const canvas = buildBeltCanvas(belt, 2);
+        const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+        if (blob) {
+          const file = new File([blob], _beltFilename(belt), { type: "image/png" });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], text, title: "LinuxDojo — " + pick(belt.name) });
+            return;
+          }
+        }
+      }
+      await navigator.share({ text, title: "LinuxDojo — " + pick(belt.name) });
+      return;
+    } catch (e) {
+      if (e && e.name === "AbortError") return;
+      fallback();
+      return;
+    }
+  }
+  fallback();
+}
+
+// ── Rendu de la grille des ceintures (page Profil) ──────────────────
+function renderBelts() {
+  const host = document.getElementById("pf-belts");
+  if (!host) return;
+  host.innerHTML = "";
+  BELTS.forEach(belt => {
+    const unlocked = beltUnlocked(belt);
+    const card = document.createElement("div");
+    card.className = "belt-card" + (unlocked ? " unlocked" : " locked");
+    card.style.setProperty("--belt-color", belt.color);
+
+    const preview = buildBeltCanvas(belt, 0.6);
+    preview.className = "belt-preview";
+    card.appendChild(preview);
+
+    const overlay = document.createElement("div");
+    overlay.className = "belt-overlay";
+    if (unlocked) {
+      overlay.innerHTML =
+        '<button class="btn-ghost belt-dl">' + t("cert.download") + '</button>' +
+        '<button class="btn-ghost belt-sh">' + t("cert.share") + '</button>';
+    } else {
+      overlay.innerHTML =
+        '<div class="belt-lock">🔒</div>' +
+        '<div class="belt-lock-sub">' + t("belt.lockedAt", { xp: belt.min }) + '</div>';
+    }
+    card.appendChild(overlay);
+    host.appendChild(card);
+
+    const dl = card.querySelector(".belt-dl");
+    if (dl) dl.addEventListener("click", () => downloadBelt(belt.id));
+    const sh = card.querySelector(".belt-sh");
+    if (sh) sh.addEventListener("click", () => shareBelt(belt.id));
+  });
 }
 
 function downloadCertificate() {

@@ -16,6 +16,8 @@ const KATAS_EN = {
     desc: "Version control in your fingers.",
     cmds: ["git init", "git status", "git add .", "git commit -m \"first commit\"", "git log", "git branch feature", "git checkout -b hotfix", "git checkout main"],
   },
+  systemd: { name: "Systemd Incident", desc: "Diagnose and restart a service, without flinching." },
+  admin:   { name: "Administration",   desc: "Create an account, grant it rights, schedule a task." },
 };
 
 if (typeof overlayArray === "function") overlayArray(KATAS, KATAS_EN, ["name", "desc", "cmds"]);

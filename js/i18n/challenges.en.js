@@ -24,6 +24,10 @@ const CHALLENGES_EN = {
   18: { category: "Cut",           desc: "Extract the <strong>2nd column</strong> (the emails) of <strong>contacts.txt</strong>. Separator: semicolon." },
   19: { category: "Uniq",          desc: "The <strong>visiteurs.txt</strong> file is full of duplicates. Display the list <strong>sorted without duplicates</strong>." },
   20: { category: "RTFM",          desc: "A true ninja reads the docs: display the <strong>manual page</strong> of the <strong>grep</strong> command." },
+  21: { category: "Services",      desc: "The <strong>nginx</strong> service is down. Check its exact status before acting." },
+  22: { category: "Logs",          desc: "Check the <strong>nginx</strong> service logs to understand why it crashed." },
+  23: { category: "Scheduling",    desc: "Install the task schedule defined in <strong>taches.cron</strong>." },
+  24: { category: "Network",       desc: "Resolve the IP address associated with <strong>intranet.dojo.lan</strong>." },
 };
 
 if (typeof overlayArray === "function") overlayArray(CHALLENGES, CHALLENGES_EN, ["category", "desc"]);

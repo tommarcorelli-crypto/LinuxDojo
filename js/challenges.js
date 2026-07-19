@@ -200,6 +200,46 @@ const CHALLENGES = [
     fs: {},
     check: (out) => /synopsis/.test(out) && /grep/.test(out),
     solution: "man grep"
+  },
+  {
+    id: 21,
+    category: "Services",
+    desc: "Le service <strong>nginx</strong> est en panne. Vérifie son état exact avant d'agir.",
+    xp: 35,
+    timeLimit: 90,
+    fs: {},
+    check: (out, state) => !!(state && state.sysStatus === "nginx") && /failed/.test(out),
+    solution: "systemctl status nginx"
+  },
+  {
+    id: 22,
+    category: "Logs",
+    desc: "Consulte les journaux du service <strong>nginx</strong> pour comprendre pourquoi il a planté.",
+    xp: 40,
+    timeLimit: 90,
+    fs: {},
+    check: (out, state) => !!(state && state.journalUnit === "nginx") && /bind\(\)/.test(out),
+    solution: "journalctl -u nginx"
+  },
+  {
+    id: 23,
+    category: "Planification",
+    desc: "Installe la planification de tâches définie dans <strong>taches.cron</strong>.",
+    xp: 35,
+    timeLimit: 100,
+    fs: { "taches.cron": { type:"file", content:"0 3 * * * /usr/bin/backup.sh\n*/15 * * * * /usr/bin/healthcheck.sh" } },
+    check: (out, state) => state && state.crontabInstall === "taches.cron",
+    solution: "crontab taches.cron"
+  },
+  {
+    id: 24,
+    category: "Réseau",
+    desc: "Résous l'adresse IP associée à <strong>intranet.dojo.lan</strong>.",
+    xp: 30,
+    timeLimit: 80,
+    fs: {},
+    check: (out) => /10\.0\.0\.80/.test(out),
+    solution: "dig intranet.dojo.lan   (ou nslookup)"
   }
 ];
 

@@ -296,7 +296,7 @@ test("chaque commande du glossaire a un overlay EN (desc/syntax) et des longueur
 test("toutes les catégories du glossaire ont un libellé EN dans GLOSS_CATS_EN", () => {
   const { GLOSSARY, glossCat } = load("en-US");
   const cats = new Set(["Tout", ...GLOSSARY.map(g => g.cat)]);
-  const untranslated = [...cats].filter(c => glossCat(c) === c && c !== "Git" && c !== "Navigation" && c !== "Scripting");
+  const untranslated = [...cats].filter(c => glossCat(c) === c && c !== "Git" && c !== "Navigation" && c !== "Scripting" && c !== "Administration");
   assert(untranslated.length === 0, "catégories sans libellé EN distinct : " + untranslated.join(", "));
 });
 

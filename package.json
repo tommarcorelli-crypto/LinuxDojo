@@ -4,7 +4,7 @@
   "private": true,
   "description": "LinuxDojo — jeu d'apprentissage du terminal Linux (PWA statique, zéro backend).",
   "scripts": {
-    "test": "node tests/terminal.test.js && node tests/game.test.js && node tests/errors.test.js && node tests/i18n.test.js && node tests/levels-i18n.test.js",
+    "test": "node tests/terminal.test.js && node tests/game.test.js && node tests/errors.test.js && node tests/i18n.test.js && node tests/levels-i18n.test.js && node tests/boss.test.js && node tests/challenges.test.js",
     "build": "node scripts/build.js"
   },
   "devDependencies": {

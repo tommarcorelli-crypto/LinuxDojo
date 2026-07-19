@@ -11,6 +11,40 @@ qui a été identifié comme piste d'amélioration y est consigné.
 
 ## ✅ Déjà fait
 
+- **🚑 Salle d'astreinte — incidents aléatoires générés** (2026-07-18) — nouveau mode
+  de jeu (page dédiée, nav, accueil) où le moteur GÉNÈRE un incident au hasard parmi 5
+  familles (service en échec/conflit de port, script qui a perdu son bit +x, tâche cron
+  qui pointe vers le mauvais chemin, compte pas dans le groupe sudo, fichier qui gonfle
+  et sature le disque) et le joueur doit diagnostiquer et réparer SANS leçon ni indice,
+  comme une vraie astreinte. Rejouable à l'infini, score au temps (record + série
+  persistés). N'utilise QUE des mécaniques déjà réellement dynamiques du moteur
+  (`systemctl`/`_services`, `crontab`/`_crontab`, `chmod`/permissions, `usermod`+`sudo`,
+  `du -h` sur le contenu réel des fichiers) — zéro nouveau comportement ajouté au
+  terminal, uniquement de la mise en scène. Les 5 générateurs ont été fumigés
+  (génération → résolution par vraies commandes → `check()`) avant livraison. SW v42 → v43.
+- **Éditeur nano simulé** (2026-07-18) — jusqu'ici le jeu ne savait PAS éditer un
+  fichier (tout passait par `echo`/redirection ou `sed`). `nano FICHIER` ouvre (ou
+  crée) un buffer numéroté ; édition ligne par ligne avec `:N texte` (remplacer),
+  `:a texte` (ajouter), `:i N texte` (insérer avant N), `:d N` (supprimer), `:p`
+  (réafficher) ; `^O` enregistre sans quitter, `^X` enregistre et quitte, `:q!`
+  abandonne. Tant que l'édition est ouverte, TOUTE saisie est interceptée comme
+  sous-commande nano (prompt dédié `[nano fichier]`) — fidèle à un vrai éditeur plein
+  écran qui monopolise le terminal. Ouverture cohérente avec `cat` : dossier refusé,
+  fichier protégé refusé (même message). Débloque enfin la classe de missions
+  « corrige la config », « répare la crontab », « commente la ligne fautive ».
+  Ajouté au glossaire/`man`/`whatis`/autocomplétion/`help` (FR+EN). 8 tests dédiés
+  (180 au total), zéro régression sur les 172 existants.
+- **sudo simulé** (2026-07-18) — suite logique directe des permissions appliquées +
+  comptes utilisateurs : `sudo COMMANDE` ré-exécute la commande avec l'identité root
+  (donc `_permTriad()` accorde rwx partout) si l'utilisateur courant est dans le groupe
+  `sudo` (le joueur l'est par défaut ; sarah aussi une fois `usermod -aG sudo sarah`
+  appliqué au scénario 12), sinon refusé avec le vrai message « n'apparaît pas dans le
+  fichier sudoers ». Contrairement à `su`, c'est ponctuel : l'identité d'origine revient
+  juste après la commande — early-return câblé comme l'expansion d'alias, donc ça
+  compose nativement avec les pipes (`sudo cat /etc/shadow | wc -l`) et les scripts.
+  Le vieil easter egg (`sudo make me a sandwich`) est préservé. Ajouté au glossaire/`man`/
+  `whatis`/autocomplétion/`help` (FR+EN). Donne enfin un SENS mécanique au groupe sudo
+  du scénario 12. 6 tests dédiés (172 au total), zéro régression sur les 166 existants.
 - Commandes manquantes : `chown`, `chgrp`, `alias`, `xargs`, `diff`, jobs en arrière-plan (`&`/`jobs`/`fg`)
 - Scénario 8 — Git : `init`, `add`, `commit`, `log`, `branch`, `checkout`, `status` (6 missions)
 - Bannière de mise à jour du service worker (au lieu d'un rechargement silencieux)
@@ -361,23 +395,6 @@ services systemd, utilisateurs/su, cron, réseau simulé et permissions réellem
 appliquées. Classées par potentiel perçu.)*
 
 **⭐ Les grosses idées (fort potentiel) :**
-- [ ] **🚑 Salle d'astreinte — incidents aléatoires générés** : un mode où le moteur
-      GÉNÈRE un incident au hasard (service tombé, port squatté, permission cassée,
-      cron saboteuse, DNS menteur, disque « plein »…) et le joueur doit diagnostiquer
-      SANS leçon ni indication, comme une vraie astreinte. Rejouable à l'infini, score
-      au temps. C'est LA killer feature que le socle actuel rend possible : tous les
-      ingrédients (services, cron, users, réseau, permissions) existent déjà — il ne
-      manque que le générateur et l'habillage. Candidat n°1 de la prochaine session.
-- [ ] **sudo simulé** — suite logique directe des permissions appliquées + utilisateurs :
-      `sudo cat /etc/shadow` fonctionnerait si l'utilisateur est dans le groupe sudo
-      (et sarah fraîchement ajoutée aussi !), refusé sinon avec le vrai message.
-      Donnerait un SENS mécanique au groupe sudo du scénario 12, et permettrait des
-      missions « élévation de privilèges » légitimes (et un pont vers rootQuest).
-- [ ] **Éditeur nano simulé** — aujourd'hui le jeu ne sait PAS éditer un fichier (tout
-      passe par echo/sed). Un mini-nano (ouvrir, modifier des lignes, Ctrl+O/Ctrl+X)
-      débloquerait toute une classe de missions impossibles actuellement : « corrige
-      la config nginx », « répare la crontab », « commente la ligne fautive ». Gros
-      débloqueur pédagogique, effort moyen (un mode plein écran dans le terminal).
 - [ ] **Scénarios communautaires en JSON (sans backend)** — version légère de
       l'« éditeur de missions » des gros chantiers : un format JSON documenté +
       import/export par fichier ou par URL (gist). Les profs/créateurs partagent leurs
@@ -385,22 +402,26 @@ appliquées. Classées par potentiel perçu.)*
       éditeur communautaire.
 
 **Cohérence du contenu (dette à rattraper suite aux scénarios 11-14) :**
-- [ ] **Glossaire : catégorie « Administration »** — les ~12 nouvelles commandes
+- [x] **Glossaire : catégorie « Administration »** — les ~12 nouvelles commandes
       (systemctl, journalctl, crontab, useradd, passwd, usermod, groups, su, ip, dig,
       nslookup, curl -I) ne sont PAS dans le glossaire (62 commandes) ni dans `man`.
-      À combler pour que la référence reste complète.
-- [ ] **Katas 8-9** — mémoire musculaire des scénarios récents : un kata « incident
+      À combler pour que la référence reste complète. ✅ Fait (curl -I était déjà
+      documenté ; les 11 autres ont rejoint la nouvelle catégorie Administration).
+- [x] **Katas 8-9** — mémoire musculaire des scénarios récents : un kata « incident
       systemd » (status/journalctl/stop/start/enable) et un kata « admin users/cron ».
-- [ ] **Nouveaux défis chrono** exploitant systemctl/journalctl/crontab/dig (les 20
-      défis actuels s'arrêtent aux commandes classiques).
+      ✅ Fait (7 → 9 katas).
+- [x] **Nouveaux défis chrono** exploitant systemctl/journalctl/crontab/dig (les 20
+      défis actuels s'arrêtent aux commandes classiques). ✅ Fait (20 → 24 défis).
 
 **Rejouabilité / motivation :**
 - [ ] **Ceintures intermédiaires téléchargeables** — pas que la Noire : ceinture
       jaune/orange/verte/marron aux paliers de progression, en PNG partageable comme
       le certificat. Chaque palier devient un petit événement à poster (viralité douce,
       le moteur canvas du certificat est réutilisable tel quel).
-- [ ] **Boss Rush** — enchaîner les 7 boss d'affilée sans perdre ses cœurs, chrono
+- [x] **Boss Rush** — enchaîner les 7 boss d'affilée sans perdre ses cœurs, chrono
       global, record local. Contenu 100 % existant, juste un mode d'enchaînement.
+      ✅ Fait (cœurs partagés sur tout le parcours, badge chrono en direct dans
+      l'arène, record persisté, se débloque après avoir vaincu les 7 boss).
 - [ ] **Mode Histoire** — une trame narrative continue reliant les 14 scénarios (tu es
       le nouvel admin de la boîte, chaque scénario = une semaine de plus, avec des
       personnages récurrents — Sarah du scénario 12 revient, le ticket #4213…).

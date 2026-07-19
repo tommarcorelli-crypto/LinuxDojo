@@ -213,6 +213,7 @@ function showPage(id) {
   document.querySelector('.nav-btn[data-page="' + id + '"]')?.classList.add("active");
   if (id === "explore"   && !gsInitialized) { initGameShell();  gsInitialized = true; }
   if (id === "challenge" && !chInitialized) { initChallenges(); chInitialized = true; }
+  if (id === "oncall"    && !ocInitialized) { initOncall();     ocInitialized = true; }
   if (id === "bandit"    && !bnInitialized) { initBandit();     bnInitialized = true; }
   if (id === "boss") { if (!bsInitialized) { initBoss(); bsInitialized = true; } else if (bsObj) { bsObj.renderList(); } }
   if (id === "kata") { if (!ktInitialized) { initKata(); ktInitialized = true; } else if (ktObj) { ktObj.renderSelect(); } }
@@ -226,7 +227,7 @@ function showPage(id) {
 
 let sbInit = false;
 
-let gsInitialized = false, chInitialized = false, bnInitialized = false, learnInit = false, bsInitialized = false, ktInitialized = false;
+let gsInitialized = false, chInitialized = false, bnInitialized = false, learnInit = false, bsInitialized = false, ktInitialized = false, ocInitialized = false;
 
 document.querySelectorAll(".nav-btn[data-page]").forEach(btn => {
   btn.addEventListener("click", () => showPage(btn.dataset.page));
@@ -587,6 +588,18 @@ function initChallenges() {
   chObj.init();
 }
 
+// MODE SALLE D'ASTREINTE
+let ocObj = null;
+function initOncall() {
+  ocObj = new OncallMode({
+    termEl:$("oncall-terminal"),inputEl:$("oncall-cmd"),runBtn:$("oncall-run"),
+    briefEl:$("oncall-brief"),titleEl:$("oncall-title"),iconEl:$("oncall-icon"),
+    timerBar:$("oncall-timer-fill"),timerLbl:$("oncall-timer-label"),skipBtn:$("oncall-skip"),
+    scoreEl:$("oncall-score"),bestEl:$("oncall-best"),streakEl:$("oncall-streak"),
+  });
+  ocObj.init();
+}
+
 // MODE BOSS
 let bsObj = null;
 function initBoss() {
@@ -599,6 +612,8 @@ function initBoss() {
     hintBtn:$("boss-hint"), hintText:$("boss-hint-text"),
     termEl:$("boss-terminal"), inputEl:$("boss-cmd"), runBtn:$("boss-run"),
     fleeBtn:$("boss-flee"),
+    rushPanelEl:$("boss-rush-panel"), rushRecordEl:$("boss-rush-panel-record"),
+    rushStartBtn:$("boss-rush-start"), rushBadgeEl:$("boss-rush-badge"),
   });
   bsObj.init();
 }

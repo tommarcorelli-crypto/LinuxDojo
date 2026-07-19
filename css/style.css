@@ -6,6 +6,19 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Focus clavier visible — jusqu'ici seuls 3 champs de terminal l'avaient ;
+   bouton, carte, lien restaient invisibles au clavier (Tab). :focus-visible
+   n'affiche l'anneau qu'à la navigation clavier, jamais au clic souris. */
+a, button, [tabindex], input, select, textarea {
+  outline-offset: 2px;
+}
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--purple-li);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 :root {
   /* Fond */
   --bg:        #080810;
@@ -312,17 +325,22 @@ body::before {
 }
 
 .mode-card {
+  --card-accent: var(--purple-li);
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: 24px;
   cursor: pointer;
-  transition: all .25s;
+  transition: transform .25s, border-color .25s, box-shadow .25s;
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   position: relative;
   overflow: hidden;
+  /* Entrée en cascade à l'affichage de l'accueil (rejoué à chaque retour sur la page) */
+  animation: mode-card-in .5s cubic-bezier(.2,.7,.3,1) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
 }
+#page-home:not(.active) .mode-card { animation: none; }
 .mode-card::before {
   content: '';
   position: absolute;
@@ -331,25 +349,58 @@ body::before {
   opacity: 0;
   transition: opacity .25s;
 }
+/* Liseré d'accent en haut de carte : discret au repos, net au survol —
+   code couleur cohérent avec le mode (violet=Apprendre, cyan=Explorer,
+   jaune=Défis, vert=Infiltration, rouge=Boss, bleu=Kata, orange=Astreinte). */
+.mode-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--card-accent);
+  opacity: .35;
+  transform: scaleX(.3);
+  transform-origin: left;
+  transition: opacity .25s, transform .3s;
+}
+/* --card-accent-rgb en triplet "r,g,b" (et non color-mix(), pour rester
+   compatible Safari < 16.2 comme le reste du projet — cf. audit CONTRIBUTING). */
+.mode-card[data-accent="purple"] { --card-accent: var(--purple-li); --card-accent-rgb: 167,139,250; }
+.mode-card[data-accent="cyan"]   { --card-accent: var(--cyan-li);   --card-accent-rgb: 103,232,249; }
+.mode-card[data-accent="yellow"] { --card-accent: var(--yellow);    --card-accent-rgb: 234,179,8; }
+.mode-card[data-accent="green"]  { --card-accent: var(--green-li);  --card-accent-rgb: 110,231,183; }
+.mode-card[data-accent="red"]    { --card-accent: #f87171;          --card-accent-rgb: 248,113,113; }
+.mode-card[data-accent="blue"]   { --card-accent: var(--blue-li);   --card-accent-rgb: 147,197,253; }
+.mode-card[data-accent="orange"] { --card-accent: var(--orange);    --card-accent-rgb: 249,115,22; }
+
 .mode-card:hover {
   border-color: var(--glass-border-hi);
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(124,58,237,0.15);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 24px rgba(var(--card-accent-rgb, 124,58,237), 0.22);
 }
 .mode-card:hover::before { opacity: 1; }
+.mode-card:hover::after { opacity: .9; transform: scaleX(1); }
+.mode-card:hover .mode-icon {
+  transform: translateY(-2px) scale(1.08);
+  filter: drop-shadow(0 0 10px rgba(var(--card-accent-rgb, 124,58,237), 0.55));
+}
 
-.mode-icon { font-size: 32px; margin-bottom: 14px; position: relative; }
+.mode-icon { font-size: 32px; margin-bottom: 14px; position: relative; transition: transform .25s, filter .25s; }
 .mode-card h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; position: relative; }
 .mode-card p { font-size: 13px; color: var(--text-md); line-height: 1.6; margin-bottom: 12px; position: relative; }
 .mode-tag {
   font-size: 11px;
   font-family: var(--font-mono);
-  color: var(--purple-li);
-  background: rgba(124,58,237,0.15);
+  color: var(--card-accent);
+  background: rgba(var(--card-accent-rgb, 124,58,237), 0.16);
   padding: 3px 10px;
   border-radius: 20px;
   display: inline-block;
   position: relative;
+}
+@keyframes mode-card-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Stats accueil */
@@ -369,7 +420,9 @@ body::before {
   text-align: center;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  transition: transform .2s, border-color .2s;
 }
+.hstat:hover { transform: translateY(-2px); border-color: var(--glass-border-hi); }
 .hstat span {
   display: block;
   font-size: 32px;
@@ -698,7 +751,7 @@ body::before {
 #hint-text { font-size: 12px; color: var(--yellow); font-family: var(--font-mono); display: none; }
 
 /* Terminal */
-#terminal, #explore-terminal, #challenge-terminal, #bandit-terminal, #boss-terminal {
+#terminal, #explore-terminal, #challenge-terminal, #bandit-terminal, #boss-terminal, #oncall-terminal {
   flex: 1;
   overflow-y: auto;
   padding: 14px 20px;
@@ -712,11 +765,13 @@ body::before {
 #challenge-terminal::-webkit-scrollbar,
 #bandit-terminal::-webkit-scrollbar,
 #boss-terminal::-webkit-scrollbar { width: 4px; }
+#oncall-terminal::-webkit-scrollbar { width: 4px; }
 #terminal::-webkit-scrollbar-thumb,
 #explore-terminal::-webkit-scrollbar-thumb,
 #challenge-terminal::-webkit-scrollbar-thumb,
 #bandit-terminal::-webkit-scrollbar-thumb,
 #boss-terminal::-webkit-scrollbar-thumb { background: var(--glass-md); border-radius: 2px; }
+#oncall-terminal::-webkit-scrollbar-thumb { background: var(--glass-md); border-radius: 2px; }
 
 .t-line { white-space: pre-wrap; word-break: break-all; }
 .t-prompt-line { display: flex; gap: 6px; }
@@ -733,7 +788,7 @@ body::before {
 .t-story { color: var(--purple-li); font-style: italic; }
 
 /* Barres d'input */
-#input-bar, #explore-input-bar, #challenge-input-bar, #bandit-input-bar, #boss-input-bar {
+#input-bar, #explore-input-bar, #challenge-input-bar, #bandit-input-bar, #boss-input-bar, #oncall-input-bar {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -745,7 +800,7 @@ body::before {
   backdrop-filter: blur(20px);
 }
 
-#prompt, .explore-prompt, .ch-prompt, .bandit-prompt, .boss-prompt {
+#prompt, .explore-prompt, .ch-prompt, .bandit-prompt, .boss-prompt, .oncall-prompt {
   color: var(--green-li);
   font-family: var(--font-mono);
   font-size: 13px;
@@ -753,7 +808,7 @@ body::before {
   flex-shrink: 0;
 }
 
-#cmd-input, #explore-cmd, #ch-cmd, #bandit-cmd, #boss-cmd {
+#cmd-input, #explore-cmd, #ch-cmd, #bandit-cmd, #boss-cmd, #oncall-cmd {
   flex: 1;
   background: transparent;
   border: none;
@@ -769,6 +824,7 @@ body::before {
 #ch-cmd::placeholder,
 #bandit-cmd::placeholder,
 #boss-cmd::placeholder { color: var(--text-dim); }
+#oncall-cmd::placeholder { color: var(--text-dim); }
 
 /* Boutons communs */
 .btn-primary {
@@ -800,7 +856,7 @@ body::before {
 }
 .btn-ghost:hover { border-color: var(--glass-border-hi); color: var(--text); }
 
-#btn-back-lesson, #run-btn, #explore-run, #ch-run, #bandit-run, #boss-run {
+#btn-back-lesson, #run-btn, #explore-run, #ch-run, #bandit-run, #boss-run, #oncall-run {
   background: var(--glass);
   border: 1px solid var(--glass-border);
   color: var(--text-md);
@@ -812,7 +868,7 @@ body::before {
   transition: all .15s;
   flex-shrink: 0;
 }
-#btn-back-lesson:hover, #run-btn:hover, #explore-run:hover, #ch-run:hover, #bandit-run:hover, #boss-run:hover {
+#btn-back-lesson:hover, #run-btn:hover, #explore-run:hover, #ch-run:hover, #bandit-run:hover, #boss-run:hover, #oncall-run:hover {
   background: var(--glass-md);
   border-color: var(--purple-li);
   color: var(--purple-li);
@@ -890,6 +946,11 @@ body::before {
   inset: 0;
   background: var(--grad-card);
 }
+.explore-visual-pop > span { display: inline-block; animation: explore-visual-in .35s cubic-bezier(.2,.8,.3,1); }
+@keyframes explore-visual-in {
+  from { opacity: .15; transform: scale(.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
 
 #explore-exits {
   display: flex;
@@ -907,9 +968,9 @@ body::before {
   font-family: var(--font-mono);
   font-size: 12px;
   text-align: left;
-  transition: all .15s;
+  transition: background .15s, border-color .15s, color .15s, transform .15s;
 }
-.exit-btn:hover { background: var(--glass-md); border-color: var(--purple-li); color: var(--purple-li); }
+.exit-btn:hover { background: var(--glass-md); border-color: var(--purple-li); color: var(--purple-li); transform: translateX(3px); }
 
 #explore-terminal-panel {
   flex: 1;
@@ -1065,6 +1126,73 @@ body::before {
 }
 .ch-dot.active { background: var(--purple); border-color: var(--purple-li); }
 .ch-dot.done   { background: var(--green); border-color: var(--green-li); }
+
+/* ── PAGE SALLE D'ASTREINTE ─────────────────────────────────── */
+#page-oncall { overflow: hidden; }
+
+#oncall-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--nav-h));
+  height: calc(100dvh - var(--nav-h));
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  gap: 16px;
+}
+
+#oncall-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.oncall-meta { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+#oncall-icon { font-size: 20px; }
+#oncall-title { color: var(--text); font-weight: 600; }
+
+#oncall-stats { display: flex; align-items: center; gap: 14px; font-family: var(--font-mono); font-size: 12px; }
+#oncall-streak { color: var(--orange); }
+#oncall-best   { color: var(--purple-li); }
+#oncall-score  { color: var(--green-li); }
+
+#oncall-timer-wrap { display: flex; align-items: center; gap: 8px; }
+#oncall-timer-bar { flex: 1; height: 4px; background: var(--glass-md); border-radius: 2px; overflow: hidden; }
+#oncall-timer-fill { height: 100%; background: var(--grad-main); border-radius: 2px; transition: width 1s linear, background .3s; width: 0%; }
+#oncall-timer-label { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); min-width: 36px; text-align: right; }
+
+#oncall-brief-box {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+#oncall-brief { font-size: 15px; color: var(--text); line-height: 1.7; }
+
+#oncall-terminal {
+  flex: 1;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  overflow-y: auto;
+  padding: 14px 18px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+#oncall-input-bar {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+#oncall-nav { display: flex; align-items: center; justify-content: flex-end; }
+
 
 /* ── PAGE INFILTRATION ──────────────────────────────────────── */
 #page-bandit { overflow: hidden; }
@@ -1260,6 +1388,33 @@ kbd {
 @keyframes toast-in  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
 @keyframes toast-out { from { opacity:1; } to { opacity:0; } }
 
+/* ── Mouvement réduit ───────────────────────────────────────── */
+/* Les animations décoratives en boucle infinie (glow du titre, grille cyber,
+   curseur clignotant, entrée en cascade) sont coupées ou neutralisées pour
+   les personnes ayant activé "réduire les animations" dans leur OS. Les
+   transitions d'interaction (hover, ouverture de menu) restent actives :
+   ce ne sont pas des animations ambiantes, elles répondent à une action. */
+@media (prefers-reduced-motion: reduce) {
+  .nav-logo-icon,
+  .hero-title span,
+  .home-hero::after,
+  #boss-avatar,
+  #boss-hpfill.hp-low,
+  .ach-shine,
+  .profile-rank-badge,
+  .profile-avatar,
+  .daily-banner,
+  .seasonal-banner,
+  .update-banner-icon,
+  .kc-cur {
+    animation: none !important;
+  }
+  .mode-card {
+    animation: none !important;
+    opacity: 1;
+  }
+}
+
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
   #learn-sidebar, #bandit-left { display: none; }
@@ -1371,6 +1526,27 @@ kbd {
 #boss-left-head h2 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 #boss-left-head p  { font-size: 12px; color: var(--text-md); line-height: 1.6; margin-bottom: 18px; }
 
+#boss-rush-panel {
+  background: linear-gradient(135deg, rgba(250,204,21,0.10), rgba(239,68,68,0.06));
+  border: 1px solid rgba(250,204,21,0.35);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+#boss-rush-panel.locked { opacity: .55; }
+#boss-rush-panel-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+#boss-rush-panel-emoji { font-size: 24px; line-height: 1; flex-shrink: 0; }
+#boss-rush-panel-title { font-size: 13px; font-weight: 700; color: var(--text); }
+#boss-rush-panel-desc  { font-size: 11px; color: var(--text-md); line-height: 1.5; margin-top: 2px; }
+#boss-rush-panel-record {
+  font-size: 10.5px; font-family: var(--font-mono); color: var(--text-dim);
+  margin-bottom: 10px; line-height: 1.4;
+}
+#boss-rush-start {
+  width: 100%; font-size: 12px; padding: 9px 0;
+}
+#boss-rush-panel.locked #boss-rush-start { cursor: not-allowed; }
+
 #boss-list { display: flex; flex-direction: column; gap: 10px; }
 
 .boss-card {
@@ -1461,6 +1637,16 @@ kbd {
   transition: width .55s cubic-bezier(.2,.8,.2,1);
   box-shadow: 0 0 12px rgba(239,68,68,0.5);
 }
+/* Sous 25% de PV : rouge plus franc + pulsation, comme un signal d'alerte
+   (le boss est proche de la défaite — jusqu'ici le dégradé restait figé). */
+#boss-hpfill.hp-low {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  animation: boss-hp-pulse 1s ease-in-out infinite;
+}
+@keyframes boss-hp-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(239,68,68,0.5); }
+  50%      { box-shadow: 0 0 22px rgba(239,68,68,0.95); }
+}
 #boss-hptext {
   position: absolute;
   inset: 0;
@@ -1476,6 +1662,11 @@ kbd {
 
 #boss-player-panel { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
 #boss-hearts { font-size: 17px; letter-spacing: 2px; min-height: 20px; }
+#boss-rush-badge {
+  font-size: 11px; font-family: var(--font-mono); font-weight: 700;
+  color: #facc15; background: rgba(250,204,21,0.12); border: 1px solid rgba(250,204,21,0.4);
+  border-radius: 6px; padding: 2px 8px; white-space: nowrap;
+}
 
 #boss-brief {
   padding: 12px 22px;
@@ -1566,6 +1757,28 @@ body.boss-hit #crt-vignette { box-shadow: inset 0 0 220px rgba(239,68,68,0.65); 
 .cert-lock-title { font-size: 18px; font-weight: 800; color: var(--text); }
 .cert-lock-sub { font-size: 13px; color: var(--text-md); max-width: 360px; line-height: 1.6; }
 .cert-lock-sub strong { color: var(--purple-li); }
+
+#pf-belts {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px; margin-bottom: 28px; max-width: 720px;
+}
+.belt-card {
+  position: relative; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+.belt-card.unlocked { border-color: var(--belt-color, #eab308); }
+.belt-preview { display: block; width: 100%; height: auto; }
+.belt-overlay {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 8px;
+}
+.belt-card.locked .belt-preview { filter: blur(5px) brightness(0.45) grayscale(0.5); }
+.belt-card.locked .belt-overlay { background: rgba(8,8,16,0.5); }
+.belt-card.unlocked .belt-overlay { opacity: 0; transition: opacity .2s; background: rgba(8,8,16,0.6); }
+.belt-card.unlocked:hover .belt-overlay { opacity: 1; }
+.belt-lock { font-size: 22px; }
+.belt-lock-sub { font-size: 10.5px; color: var(--text-md); line-height: 1.4; }
+.belt-dl, .belt-sh { font-size: 10.5px; padding: 5px 10px; }
 
 /* ═══ HEATMAP D'ACTIVITÉ (profil) ═══════════════════════════ */
 #pf-heatmap {
@@ -1831,7 +2044,11 @@ body::after {
 .btn-hero:active::after { width: 300px; height: 300px; }
 
 /* ── Rank badge dans la nav ── */
+/* --rank-color posé en JS (updateNavRank, profile.js) depuis RANKS[].color
+   (fx.js) — jusqu'ici seul le texte du nom reprenait la couleur du rang,
+   le cadre du badge restait neutre quel que soit le palier atteint. */
 #nav-rank {
+  --rank-color: var(--purple-li);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -1840,16 +2057,18 @@ body::after {
   padding: 3px 10px;
   border-radius: 20px;
   background: var(--glass);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--rank-color);
+  transition: border-color .3s, box-shadow .3s;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0), 0 0 12px -4px var(--rank-color);
   white-space: nowrap;
 }
-#nav-rank .rank-icon { font-size: 14px; }
+#nav-rank .rank-icon { font-size: 14px; filter: drop-shadow(0 0 4px var(--rank-color)); }
 @media (max-width: 768px) {
   #nav-rank { display: none; }
 }
 
 /* ── Terminal cursor clignotant sur input focus ── */
-#cmd-input:focus, #explore-cmd:focus, #ch-cmd:focus, #bandit-cmd:focus {
+#cmd-input:focus, #explore-cmd:focus, #ch-cmd:focus, #bandit-cmd:focus, #oncall-cmd:focus {
   animation: input-glow 2s ease-in-out infinite;
 }
 @keyframes input-glow {
@@ -1982,9 +2201,34 @@ body::after {
   transition: all .2s;
 }
 .profile-badge.locked { opacity: 0.3; filter: grayscale(1); }
+.profile-badge.unlocked { border-color: rgba(167,139,250,0.35); }
 .profile-badge.unlocked:hover { transform: scale(1.05); border-color: var(--yellow); box-shadow: 0 0 20px rgba(234,179,8,0.2); }
 .profile-badge-icon { font-size: 28px; margin-bottom: 6px; }
 .profile-badge-name { font-size: 10px; color: var(--text-md); }
+
+/* Badges secrets débloqués : signal de rareté (liseré doré + reflet qui
+   balaie une fois au survol) — jusqu'ici .profile-badge-secret était posée
+   par profile.js mais n'avait aucun style, donc invisible à l'oeil. */
+.profile-badge.unlocked.profile-badge-secret {
+  border-color: rgba(234,179,8,0.5);
+  background: linear-gradient(160deg, rgba(234,179,8,0.10) 0%, var(--glass) 55%);
+  position: relative;
+  overflow: hidden;
+}
+.profile-badge.unlocked.profile-badge-secret:hover {
+  border-color: var(--yellow);
+  box-shadow: 0 0 24px rgba(234,179,8,0.3);
+}
+.profile-badge.unlocked.profile-badge-secret::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.22), transparent);
+  transform: skewX(-20deg);
+  transition: left .6s ease;
+}
+.profile-badge.unlocked.profile-badge-secret:hover::after { left: 130%; }
 
 /* Menu hamburger mobile : voir le bloc unique @media (max-width: 920px) plus haut (#nav-hamburger) */
 
@@ -2419,6 +2663,9 @@ body.season-noel {
     flex-shrink: 0;
   }
   #boss-left-head { display: none; }
+  #boss-rush-panel { padding: 8px 10px; margin-bottom: 8px; }
+  #boss-rush-panel-desc { display: none; }
+  #boss-rush-panel-record { margin-bottom: 6px; }
   #boss-list {
     flex-direction: row;
     overflow-x: auto;

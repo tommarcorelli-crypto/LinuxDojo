@@ -52,6 +52,10 @@ const GLOSSARY = [
     syntax:"rm [options] fichier",
     options:[["-r","supprime un dossier et son contenu"],["-i","confirme chaque suppression"],["-f","force sans confirmation"]],
     examples:[["rm temp.log","supprimer un fichier"],["rm -r dir/","supprimer un dossier"]] },
+  { cmd:"nano", cat:"Fichiers", desc:"Éditeur de texte en ligne de commande (ouvre ou crée un fichier).",
+    syntax:"nano fichier",
+    options:[[":N texte","remplace la ligne N"],[":a texte","ajoute une ligne à la fin"],[":d N","supprime la ligne N"],["^O / ^X","enregistrer / enregistrer et quitter"]],
+    examples:[["nano config.txt","ouvrir/créer le fichier"],[":3 nouvelle ligne","corriger la ligne 3"],["^X","enregistrer et quitter"]] },
 
   // ── Recherche ──
   { cmd:"grep", cat:"Recherche", desc:"Cherche un motif dans un fichier.",
@@ -115,6 +119,10 @@ const GLOSSARY = [
     syntax:"whoami   ·   id",
     options:[["whoami","nom d'utilisateur"],["id","UID, GID, groupes"]],
     examples:[["whoami","→ user"],["id","→ uid=1000(user)..."]] },
+  { cmd:"sudo", cat:"Permissions & Système", desc:"Exécute UNE commande en tant que root, sans changer d'utilisateur durablement.",
+    syntax:"sudo COMMANDE [ARGS]",
+    options:[["groupe sudo requis","refusé sinon : « n'apparaît pas dans le fichier sudoers »"],["contrairement à su","ponctuel : l'identité d'origine revient juste après"]],
+    examples:[["sudo cat /etc/shadow","lire un fichier protégé, le temps de la commande"],["usermod -aG sudo sarah","condition préalable : rejoindre le groupe sudo"]] },
   { cmd:"df", cat:"Permissions & Système", desc:"Affiche l'espace disque disponible.",
     syntax:"df -h",
     options:[["-h","tailles lisibles (Go, Mo)"]],
@@ -168,6 +176,47 @@ const GLOSSARY = [
     syntax:"ln -s cible nom_du_lien",
     options:[["-s","lien symbolique (soft)"],["-f","remplace un lien existant"]],
     examples:[["ln -s /app/v2 current","current → v2"]] },
+  { cmd:"ip", cat:"Réseau & Archives", desc:"Affiche la configuration réseau de la machine (adresses, routes).",
+    syntax:"ip a   ·   ip r",
+    options:[["a","adresses IP de chaque interface"],["r","table de routage (passerelle par défaut)"]],
+    examples:[["ip a","voir sa propre IP"],["ip r","voir la route par défaut"]] },
+  { cmd:"dig / nslookup", cat:"Réseau & Archives", desc:"Interroge le DNS pour résoudre un nom en adresse IP.",
+    syntax:"dig NOM   ·   nslookup NOM",
+    options:[["status: NOERROR","le nom existe, adresse en section ANSWER"],["status: NXDOMAIN","le nom n'existe pas dans la zone"]],
+    examples:[["dig intranet.dojo.lan","résolution détaillée (façon administrateur)"],["nslookup intranet.dojo.lan","résolution plus lisible (façon débutant)"]] },
+
+  // ── Administration ──
+  { cmd:"systemctl", cat:"Administration", desc:"Gère les services système (démarrer, arrêter, activer au boot...).",
+    syntax:"systemctl COMMANDE [SERVICE]",
+    options:[["status NOM","état détaillé (actif/inactif/failed)"],["start / stop / restart NOM","démarrer / arrêter / redémarrer"],["enable / disable NOM","activer / désactiver le démarrage auto au boot"],["list-units --type=service","liste tous les services"]],
+    examples:[["systemctl status nginx","voir si nginx tourne"],["systemctl restart nginx","relancer un service"],["systemctl list-units --type=service","repérer un service en failed"]] },
+  { cmd:"journalctl", cat:"Administration", desc:"Consulte les journaux (logs) des services gérés par systemd.",
+    syntax:"journalctl -u SERVICE [-n N]",
+    options:[["-u nginx","logs d'un service précis"],["-n 20","limite aux 20 dernières lignes"]],
+    examples:[["journalctl -u nginx","comprendre pourquoi un service a planté"],["journalctl -u cron -n 5","les 5 dernières lignes"]] },
+  { cmd:"crontab", cat:"Administration", desc:"Programme des tâches à exécuter automatiquement à intervalles réguliers.",
+    syntax:"crontab -l   ·   crontab -r   ·   crontab fichier",
+    options:[["-l","affiche la crontab installée"],["-r","supprime TOUTE la crontab (sans confirmation)"],["fichier","installe le contenu du fichier comme nouvelle crontab"]],
+    examples:[["crontab -l","auditer ce qui est planifié"],["crontab taches.cron","installer une nouvelle planification"]] },
+  { cmd:"useradd", cat:"Administration", desc:"Crée un nouveau compte utilisateur.",
+    syntax:"useradd -m NOM",
+    options:[["-m","crée aussi le dossier personnel (/home/NOM)"]],
+    examples:[["useradd -m sarah","créer le compte de sarah avec son dossier"]] },
+  { cmd:"passwd", cat:"Administration", desc:"Définit ou change le mot de passe d'un compte.",
+    syntax:"passwd [NOM]",
+    options:[["passwd","change son propre mot de passe"],["passwd NOM","change le mot de passe d'un autre compte (admin)"]],
+    examples:[["passwd sarah","donner un mot de passe à sarah pour qu'elle puisse su"]] },
+  { cmd:"usermod", cat:"Administration", desc:"Modifie un compte existant, en particulier ses groupes.",
+    syntax:"usermod -aG GROUPE NOM",
+    options:[["-aG GROUPE","AJOUTE au groupe, sans toucher les autres"],["-G GROUPE (sans -a)","piège : REMPLACE tous les groupes secondaires"]],
+    examples:[["usermod -aG sudo sarah","donner les droits sudo à sarah"]] },
+  { cmd:"groups", cat:"Administration", desc:"Affiche les groupes auxquels appartient un utilisateur.",
+    syntax:"groups [NOM]", options:[],
+    examples:[["groups sarah","vérifier que sarah a bien rejoint le groupe sudo"]] },
+  { cmd:"su", cat:"Administration", desc:"Change d'identité durablement (contrairement à sudo, ponctuel).",
+    syntax:"su NOM",
+    options:[["su NOM","bascule sur le compte NOM (demande son mot de passe)"],["exit","revient à l'identité d'origine"]],
+    examples:[["su sarah","devenir sarah pour de vrai, jusqu'à exit"]] },
 
   // ── Texte & Décodage ──
   { cmd:"echo", cat:"Texte & Décodage", desc:"Affiche du texte ; avec > écrit dans un fichier.",
@@ -257,7 +306,7 @@ const GLOSSARY = [
     examples:[["git checkout -b feature-x","nouvelle branche de travail"],["git branch","voir où on en est"]] },
 ];
 
-const GLOSSARY_CATS = ["Tout","Navigation","Fichiers","Recherche","Permissions & Système","Réseau & Archives","Texte & Décodage","Scripting","Git","Aide"];
+const GLOSSARY_CATS = ["Tout","Navigation","Fichiers","Recherche","Permissions & Système","Réseau & Archives","Administration","Texte & Décodage","Scripting","Git","Aide"];
 
 let glossaryFilter = "Tout";
 let glossarySearch = "";

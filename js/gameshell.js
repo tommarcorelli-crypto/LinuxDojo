@@ -440,6 +440,11 @@ class GameShell {
     this.locationName.textContent = loc.name;
     this.locationDesc.textContent = loc.desc;
     this.visualEl.innerHTML = `<span style="position:relative;z-index:1;font-size:64px">${loc.emoji}</span>`;
+    // Petit effet d'apparition à chaque changement de lieu (relance l'animation
+    // CSS via un reflow forcé — remove/add classique, sans dépendance).
+    this.visualEl.classList.remove("explore-visual-pop");
+    void this.visualEl.offsetWidth;
+    this.visualEl.classList.add("explore-visual-pop");
 
     // Sorties (boutons)
     this.exitsEl.innerHTML = "";

@@ -43,6 +43,7 @@ class Terminal {
     this._suStack = [];  // pile des utilisateurs précédents avant chaque 'su' (pour 'exit')
     this._sshStack = []; // pile des prompts précédents avant chaque 'ssh' (pour 'exit')
     this._crontab = null; // crontab simulée de l'utilisateur (null = « no crontab »)
+    this._nano = null;   // session d'édition nano en cours (null = pas en édition)
   }
 
   // Charge le filesystem d'une mission.
@@ -79,6 +80,7 @@ class Terminal {
     this._suStack = [];
     this._sshStack = [];
     this._crontab = null;
+    this._nano = null;
   }
 
   // ── Zone DNS simulée (partagée par dig / nslookup / curl) ─────
@@ -230,6 +232,7 @@ class Terminal {
     return p;
   }
   promptStr() {
+    if (this._nano) return `[nano ${this._nano.arg}]`;   // mode édition, voir _nanoInput()
     if (this._blockLines.length) return ">";   // continuation d'un bloc for/if/while
     return this.ps1User + ":" + this._display(this.cwd) + "$";
   }
@@ -321,7 +324,7 @@ class Terminal {
     }
 
     // Commandes connues proches
-    const known = ["ls","cd","cat","less","more","pwd","mkdir","touch","cp","mv","rm","chmod","chown","chgrp","grep","find","wc","sort","echo","ps","kill","whoami","id","df","ln","tar","curl","sed","awk","clear","help","head","tail","uniq","cut","tr","tree","du","date","uname","hostname","uptime","free","history","man","whatis","env","ping","alias","unalias","xargs","diff","jobs","fg","git","ssh","scp","netstat","docker","systemctl","journalctl","useradd","passwd","usermod","groups","su","crontab","ip","dig","nslookup"];
+    const known = ["ls","cd","cat","less","more","pwd","mkdir","touch","cp","mv","rm","chmod","chown","chgrp","grep","find","wc","sort","echo","ps","kill","whoami","id","df","ln","tar","curl","sed","awk","clear","help","head","tail","uniq","cut","tr","tree","du","date","uname","hostname","uptime","free","history","man","whatis","env","ping","alias","unalias","xargs","diff","jobs","fg","git","ssh","scp","netstat","docker","systemctl","journalctl","useradd","passwd","usermod","groups","su","sudo","crontab","ip","dig","nslookup","nano"];
     const close = known.find(k => this._levenshtein(cmd, k) <= 2);
     if (close) {
       return sh(`${cmd}: commande introuvable\n💡 Voulais-tu dire : ${close} ?`, `${cmd}: command not found\n💡 Did you mean: ${close} ?`);
@@ -351,7 +354,7 @@ class Terminal {
 
     // Complétion de commande (premier mot)
     if (parts.length === 1) {
-      const cmds = ["ls","cd","cat","less","more","pwd","mkdir","touch","cp","mv","rm","chmod","chown","chgrp","grep","find","wc","sort","echo","ps","kill","whoami","id","df","ln","tar","curl","sed","awk","clear","help","head","tail","uniq","cut","tr","tree","du","date","uname","hostname","uptime","free","history","man","whatis","env","export","ping","base64","rot13","xxd","for","while","if","test","seq","bash","true","false","alias","unalias","xargs","diff","jobs","fg","git","ssh","scp","netstat","docker","systemctl","journalctl","useradd","passwd","usermod","groups","su","crontab","ip","dig","nslookup"];
+      const cmds = ["ls","cd","cat","less","more","pwd","mkdir","touch","cp","mv","rm","chmod","chown","chgrp","grep","find","wc","sort","echo","ps","kill","whoami","id","df","ln","tar","curl","sed","awk","clear","help","head","tail","uniq","cut","tr","tree","du","date","uname","hostname","uptime","free","history","man","whatis","env","export","ping","base64","rot13","xxd","for","while","if","test","seq","bash","true","false","alias","unalias","xargs","diff","jobs","fg","git","ssh","scp","netstat","docker","systemctl","journalctl","useradd","passwd","usermod","groups","su","crontab","ip","dig","nslookup","sudo","nano"];
       const matches = cmds.filter(c => c.startsWith(last));
       if (matches.length === 1) {
         inputEl.value = matches[0] + " ";
@@ -415,9 +418,13 @@ class Terminal {
   // Point d'entrée : affiche le prompt, gère les blocs multi-lignes
   // (for/if/while), puis délègue à _execScript ou _execSimple.
   run(raw) {
-    if (!raw.trim() && !this._blockLines.length) return { output: "", error: false };
+    if (!raw.trim() && !this._blockLines.length && !this._nano) return { output: "", error: false };
     this.printPrompt(raw);
     if (raw.trim()) this.cmdLog.push(raw.trim());
+
+    // Mode édition nano : chaque ligne tapée est une sous-commande de l'éditeur
+    // (:N texte, :a, :d N, ^O, ^X…), pas une commande shell — voir _nanoInput().
+    if (this._nano) return this._nanoInput(raw);
 
     // Accumulation d'un bloc for/if/while jusqu'à équilibre (do…done / if…fi)
     if (this._blockLines.length || this._hasShellKeyword(raw)) {
@@ -769,6 +776,103 @@ class Terminal {
     return out;
   }
 
+  // ── Mini-éditeur nano (mode plein écran texte) ──────────────────
+  // GNU nano réel : Ctrl+O enregistre (reste ouvert), Ctrl+X enregistre-et-quitte.
+  // Faute de curses dans ce terminal en lignes, les combos se TAPENT littéralement
+  // (^O, ^X) — le clavier réel les câble aussi en vrai raccourcis côté UI (gameshell).
+  // Édition ligne par ligne : ":N texte" remplace la ligne N, ":a texte" ajoute,
+  // ":i N texte" insère avant N, ":d N" supprime, ":p" réaffiche le buffer,
+  // ":q" quitte SANS enregistrer (refusé si modifié — ":q!" force l'abandon).
+  // Ouvre (ou crée) un fichier en mode édition. Ne pose PAS de contrôle d'écriture
+  // (comme le reste du moteur : > et >> n'en posent pas non plus), seule la
+  // LECTURE est vérifiée à l'ouverture (cohérent avec cat).
+  _nanoOpen(pathArg) {
+    const p = this._resolve(pathArg);
+    const existing = this.fs[p];
+    if (existing && existing.type === "dir") {
+      return { out: sh(`nano : « ${pathArg} » est un dossier`, `nano: "${pathArg}" is a directory`), err: true };
+    }
+    if (this._denied(p) || (existing && existing.type === "file" && !this._canRead(existing))) {
+      return { out: this._permErr("nano", pathArg), err: true };
+    }
+    const content = existing ? (existing.content || "") : "";
+    this._nano = { path: p, arg: pathArg, lines: content.split("\n"), dirty: false };
+    this.state.nanoOpen = pathArg;
+    const header = sh(`GNU nano — ${pathArg}${existing ? "" : " (Nouveau fichier)"}`, `GNU nano — ${pathArg}${existing ? "" : " (New File)"}`);
+    const help = sh(
+      "💡 :N texte (remplacer la ligne N) · :a texte (ajouter) · :i N texte (insérer avant N) · :d N (supprimer) · :p (réafficher) · ^O (enregistrer) · ^X (enregistrer + quitter) · :q! (quitter sans enregistrer)",
+      "💡 :N text (replace line N) · :a text (append) · :i N text (insert before N) · :d N (delete) · :p (redisplay) · ^O (save) · ^X (save & exit) · :q! (quit without saving)"
+    );
+    return { out: `${header}\n${this._nanoDump()}\n\n${help}`, err: false };
+  }
+
+  _nanoDump() {
+    const n = this._nano;
+    if (n.lines.length === 0 || (n.lines.length === 1 && n.lines[0] === "")) return sh("(vide)", "(empty)");
+    return n.lines.map((l, i) => `${String(i + 1).padStart(3, " ")} │ ${l}`).join("\n");
+  }
+
+  _nanoSave() {
+    const n = this._nano;
+    const prev = this.fs[n.path];
+    this.fs[n.path] = { type: "file", content: n.lines.join("\n") };
+    if (prev) { if (prev.owner) this.fs[n.path].owner = prev.owner; if (prev.perms) this.fs[n.path].perms = prev.perms; }
+    this._ensureParents(n.path);
+    n.dirty = false;
+    this.state.nanoSave = n.arg;
+  }
+
+  _nanoInput(raw) {
+    const n = this._nano;
+    const line = raw.trim();
+    let out = "", err = false, closing = false;
+
+    if (!line || line === ":p") {
+      out = this._nanoDump();
+    } else if (/^\^x$/i.test(line) || line === ":x") {
+      if (n.dirty) { this._nanoSave(); out = sh(`[ Écrit ${n.lines.length} lignes ]`, `[ Wrote ${n.lines.length} lines ]`); }
+      closing = true;
+    } else if (/^\^o$/i.test(line) || line === ":w") {
+      this._nanoSave();
+      out = sh(`[ Écrit ${n.lines.length} lignes ]`, `[ Wrote ${n.lines.length} lines ]`);
+    } else if (line === ":q!") {
+      closing = true;
+    } else if (line === ":q") {
+      if (n.dirty) {
+        out = sh("Modifications non enregistrées 💡 ^X pour enregistrer et quitter, ou :q! pour tout abandonner.", "Unsaved changes 💡 ^X to save and exit, or :q! to discard everything.");
+        err = true;
+      } else closing = true;
+    } else {
+      let m;
+      if ((m = line.match(/^:a\s?(.*)$/))) {
+        n.lines.push(m[1]); n.dirty = true; out = this._nanoDump();
+      } else if ((m = line.match(/^:i\s+(\d+)\s?(.*)$/))) {
+        const idx = parseInt(m[1], 10) - 1;
+        if (idx < 0 || idx > n.lines.length) { out = sh(`nano : pas de ligne ${m[1]}`, `nano: no line ${m[1]}`); err = true; }
+        else { n.lines.splice(idx, 0, m[2]); n.dirty = true; out = this._nanoDump(); }
+      } else if ((m = line.match(/^:d\s+(\d+)$/))) {
+        const idx = parseInt(m[1], 10) - 1;
+        if (idx < 0 || idx >= n.lines.length) { out = sh(`nano : pas de ligne ${m[1]}`, `nano: no line ${m[1]}`); err = true; }
+        else { n.lines.splice(idx, 1); n.dirty = true; out = this._nanoDump(); }
+      } else if ((m = line.match(/^:(\d+)\s?(.*)$/))) {
+        const idx = parseInt(m[1], 10) - 1;
+        if (idx < 0 || idx > n.lines.length) { out = sh(`nano : pas de ligne ${m[1]}`, `nano: no line ${m[1]}`); err = true; }
+        else { n.lines[idx] = m[2]; n.dirty = true; out = this._nanoDump(); }
+      } else {
+        out = sh(
+          "nano : commande inconnue. 💡 :N texte · :a texte · :i N texte · :d N · :p · ^O · ^X · :q!",
+          "nano: unknown command. 💡 :N text · :a text · :i N text · :d N · :p · ^O · ^X · :q!"
+        );
+        err = true;
+      }
+    }
+
+    if (out) { if (err) this.printErr(out); else out.split("\n").forEach(l => this.printOut(l)); }
+    if (closing) this._nano = null;
+    this._lastCode = err ? 1 : 0;
+    return { output: out, error: err };
+  }
+
   // ── Commandes ──────────────────────────────────────────────────
   _exec(parts, stdin = "", silent = false) {
     const [cmd, ...args] = parts;
@@ -779,6 +883,50 @@ class Terminal {
       this._inAlias = true;
       const res = this._exec([...this._parse(this._aliases[cmd]), ...args], stdin, silent);
       this._inAlias = false;
+      return res;
+    }
+
+    // sudo : élévation ponctuelle vers root, suite logique directe des permissions
+    // appliquées + comptes utilisateurs. Autorisé si root (déjà tout permis) ou si
+    // l'utilisateur courant appartient au groupe "sudo" (cf. usermod -aG sudo, scénario
+    // 12). La commande cible est ré-exécutée avec _curUser = "root" (donc _permTriad()
+    // lui accorde rwx partout), puis l'identité d'origine est restaurée — sudo ne change
+    // PAS l'utilisateur de façon persistante, contrairement à su. Early-return exact
+    // comme l'expansion d'alias juste au-dessus : `silent` est transmis tel quel, donc
+    // ça compose naturellement avec pipes (sudo cat /etc/shadow | wc -l) et scripts.
+    if (cmd === "sudo") {
+      this._initUsers();
+      const sudoArgs = args.filter(a => a !== "-n" && a !== "-S" && a !== "-i");
+      if (sudoArgs.join(" ").includes("sandwich")) {           // xkcd 149, préservé
+        const msg = sh("D'accord. 🥪", "Okay. 🥪");
+        if (!silent) this.printOut(msg);
+        return { output: msg, error: false };
+      }
+      if (!sudoArgs.length) {
+        const msg = sh("usage : sudo COMMANDE [ARGS]", "usage: sudo COMMAND [ARGS]");
+        if (!silent) this.printErr(msg);
+        return { output: msg, error: true };
+      }
+      const me = this._users[this._curUser] || this._users.user;
+      const allowed = this._curUser === "root" || (me.groups || []).includes("sudo");
+      if (!allowed) {
+        const msg = sh(
+          `${this._curUser} n'apparaît pas dans le fichier sudoers. Cet incident sera signalé. 👮\n💡 Il faut appartenir au groupe sudo : usermod -aG sudo ${this._curUser}${this._curUser !== "root" ? " (root uniquement)" : ""}.`,
+          `${this._curUser} is not in the sudoers file. This incident will be reported. 👮\n💡 You need to be in the sudo group: usermod -aG sudo ${this._curUser}${this._curUser !== "root" ? " (root only)" : ""}.`
+        );
+        if (!silent) this.printErr(msg);
+        this.state.sudoDenied = this._curUser;
+        return { output: msg, error: true };
+      }
+      const prevUser = this._curUser;
+      this._curUser = "root";
+      let res;
+      try {
+        res = this._exec(sudoArgs, stdin, silent);
+      } finally {
+        this._curUser = prevUser;
+      }
+      this.state.sudo = sudoArgs[0];
       return res;
     }
 
@@ -2418,13 +2566,6 @@ class Terminal {
         break;
       }
 
-      case "sudo": {
-        if (args.join(" ").includes("sandwich")) { out = sh("D'accord. 🥪", "Okay. 🥪"); break; }  // xkcd 149
-        out = sh("user n'apparaît pas dans le fichier sudoers.\nCet incident sera signalé. 👮\n\n(Ici, pas besoin de sudo — tu es déjà maître du dojo.)", "user is not in the sudoers file.\nThis incident will be reported. 👮\n\n(No need for sudo here — you're already master of the dojo.)");
-        err = true;
-        break;
-      }
-
       case "vim":
       case "vi": {
         out = sh("Tu es entré dans Vim.\n\n⚠️  Statistiquement, tu vas y rester coincé 2 heures.\nPour sortir : Échap puis :q!  (ici, tape juste :q!)", "You entered Vim.\n\n⚠️  Statistically, you'll be stuck here for 2 hours.\nTo exit: Esc then :q!  (here, just type :q!)");
@@ -2437,7 +2578,14 @@ class Terminal {
         this.state.vim = false;
         break;
       }
-      case "nano": { out = sh("GNU nano — l'éditeur de ceux qui veulent juste que ça marche. (simulé)\nCtrl+X pour quitter. Ici, rien à éditer.", "GNU nano — the editor for those who just want it to work. (simulated)\nCtrl+X to quit. Nothing to edit here."); break; }
+      case "nano": {
+        const target = args.filter(a => !a.startsWith("-"))[0];
+        if (!target) { out = sh("usage : nano FICHIER", "usage: nano FILE"); err = true; break; }
+        if (silent) { out = ""; break; } // pas d'édition interactive en contexte silencieux (pipe/condition)
+        const res = this._nanoOpen(target);
+        out = res.out; err = res.err;
+        break;
+      }
       case "emacs": { out = sh("Emacs : un excellent système d'exploitation.\nIl ne lui manque qu'un bon éditeur de texte. 😈", "Emacs: a great operating system.\nIt just lacks a good text editor. 😈"); break; }
 
       case "exit":
@@ -2471,7 +2619,7 @@ class Terminal {
         out = sh([
           "═══ COMMANDES DU DOJO ═══",
           "Navigation   : ls [-la], cd, pwd, tree, find",
-          "Fichiers     : cat, less, head, tail, touch, mkdir, cp, mv, rm, ln -s, chmod",
+          "Fichiers     : cat, less, head, tail, touch, mkdir, cp, mv, rm, ln -s, chmod, nano (éditeur)",
           "Texte        : grep [-invc], sort, uniq [-c], wc [-lwc], cut -d -f, tr, sed, awk",
           "Système      : ps aux, kill, whoami, id, df -h, du, free, uptime, uname -a, date",
           "Propriété    : chown user:groupe fichier, chgrp groupe fichier",
@@ -2490,7 +2638,7 @@ class Terminal {
           "Git :  git init · git add . · git commit -m \"msg\" · git log · git branch · git checkout -b nom",
           "Docker :  docker build -t nom . · docker images · docker run -d --name nom image · docker ps [-a] · docker logs nom · docker stop nom",
           "Services :  systemctl status|start|stop|restart|enable NOM · systemctl list-units --type=service · journalctl -u NOM [-n N]",
-          "Utilisateurs :  useradd -m NOM · passwd NOM · usermod -aG GROUPE NOM · groups NOM · id NOM · su NOM (exit pour revenir)",
+          "Utilisateurs :  useradd -m NOM · passwd NOM · usermod -aG GROUPE NOM · groups NOM · id NOM · su NOM (exit pour revenir) · sudo CMD (si groupe sudo)",
           "Planification :  crontab FICHIER (installe) · crontab -l (affiche) · crontab -r (supprime tout)",
           "Astuces : Tab autocomplète (même les chemins) · ↑/↓ historique · Ctrl+R recherche dans l'historique · man grep pour le manuel",
           "Touche ? (hors saisie) : ouvre l'écran des raccourcis clavier",
@@ -2500,7 +2648,7 @@ class Terminal {
         ].join("\n"), [
           "═══ DOJO COMMANDS ═══",
           "Navigation   : ls [-la], cd, pwd, tree, find",
-          "Files        : cat, less, head, tail, touch, mkdir, cp, mv, rm, ln -s, chmod",
+          "Files        : cat, less, head, tail, touch, mkdir, cp, mv, rm, ln -s, chmod, nano (editor)",
           "Text         : grep [-invc], sort, uniq [-c], wc [-lwc], cut -d -f, tr, sed, awk",
           "System       : ps aux, kill, whoami, id, df -h, du, free, uptime, uname -a, date",
           "Ownership    : chown user:group file, chgrp group file",
@@ -2519,7 +2667,7 @@ class Terminal {
           "Git:  git init · git add . · git commit -m \"msg\" · git log · git branch · git checkout -b name",
           "Docker:  docker build -t name . · docker images · docker run -d --name name image · docker ps [-a] · docker logs name · docker stop name",
           "Services:  systemctl status|start|stop|restart|enable NAME · systemctl list-units --type=service · journalctl -u NAME [-n N]",
-          "Users:  useradd -m NAME · passwd NAME · usermod -aG GROUP NAME · groups NAME · id NAME · su NAME (exit to come back)",
+          "Users:  useradd -m NAME · passwd NAME · usermod -aG GROUP NAME · groups NAME · id NAME · su NAME (exit to come back) · sudo CMD (if in sudo group)",
           "Scheduling:  crontab FILE (install) · crontab -l (show) · crontab -r (remove all)",
           "Tips: Tab autocompletes (even paths) · ↑/↓ history · Ctrl+R search in history · man grep for the manual",
           "Key ? (outside input): opens the keyboard shortcuts screen",

@@ -6,6 +6,67 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 ## [Non publié]
 
 ### Ajouté
+- **Katas 8-9 & 4 nouveaux défis chrono** — fin du rattrapage de dette entamé
+  avec le glossaire Administration. Katas de vitesse : « Incident systemd »
+  (status/journalctl/stop/start/restart/enable) et « Administration »
+  (useradd/passwd/usermod/groups/su/crontab) — 7 → **9 katas**. Défis chrono :
+  diagnostiquer un service en panne (`systemctl status`), consulter ses logs
+  (`journalctl -u`), installer une planification (`crontab fichier`) et
+  résoudre un nom DNS (`dig`/`nslookup`) — 20 → **24 défis**. Les checks des
+  nouveaux défis s'appuient sur l'état interne du terminal (ex. `state.sysStatus`)
+  plutôt que sur le texte affiché, pour rester fiables quelle que soit la langue.
+  Tous les compteurs affichés (accueil, landing, README) mis à jour en conséquence.
+  9 tests dédiés (`tests/challenges.test.js`), 199 au total, zéro régression.
+  FR+EN. SW v44 → v45.
+- **🏆 Boss Rush** — nouveau mode dans la Salle des Boss : enchaîner les 7 boss
+  (Kraken → Spectre → Hydre → Golem → Gardien → Zombie → Sensei) d'affilée, avec
+  un pool de **3 cœurs partagé sur tout le parcours** au lieu d'un par combat —
+  la moindre erreur répétée peut faire échouer le run entier. Se débloque une
+  fois les 7 boss vaincus au moins une fois chacun. Chrono global affiché en
+  temps réel pendant le run (badge dans l'arène), meilleur temps persisté
+  (localStorage) et affiché dans le panneau dédié à gauche de la Salle des Boss.
+  Sortie propre à tout moment : fuir ou choisir un combat normal dans la liste
+  interrompt le Rush sans le casser (cœurs remis à 3 pour un combat classique).
+  Contenu 100% existant, uniquement un mode d'enchaînement — 10 tests dédiés
+  (`tests/boss.test.js`, 190 au total), zéro régression. FR+EN. SW v43 → v44.
+- **Rattrapage de dette — glossaire** : 11 commandes utilisées dans des missions
+  mais absentes du glossaire/`man`/`whatis` (`systemctl`, `journalctl`, `crontab`,
+  `useradd`, `passwd`, `usermod`, `groups`, `su`, `ip`, `dig`, `nslookup`) rejoignent
+  une nouvelle catégorie **Administration**, avec syntaxe/options/exemples FR+EN.
+- **🚑 Salle d'astreinte** — nouveau mode de jeu à part entière (page dédiée,
+  bouton de nav, carte sur l'accueil) : le moteur GÉNÈRE un incident au hasard parmi
+  5 familles (service en échec ou conflit de port, script qui a perdu son bit `+x`,
+  tâche cron pointant vers le mauvais chemin, compte hors du groupe sudo, fichier qui
+  gonfle et sature le disque) et le joueur doit diagnostiquer et réparer SANS leçon ni
+  indice — comme une vraie astreinte. Rejouable à l'infini ; score au temps, record et
+  série consécutive persistés (localStorage). Repose entièrement sur des mécaniques
+  déjà réellement dynamiques (`systemctl`, `crontab`, permissions/`chmod`, `usermod`+
+  `sudo`, `du -h` sur le contenu réel des fichiers) : aucun nouveau comportement ajouté
+  au terminal lui-même. SW v42 → v43.
+- **Éditeur `nano` simulé** 📝 — le jeu ne savait pas éditer un fichier autrement
+  qu'avec `echo`/redirection ou `sed`. `nano FICHIER` ouvre (ou crée) un buffer
+  numéroté ; édition ligne par ligne avec `:N texte` (remplacer), `:a texte`
+  (ajouter), `:i N texte` (insérer avant N), `:d N` (supprimer), `:p` (réafficher) ;
+  `^O` enregistre sans quitter, `^X` enregistre et quitte, `:q!` abandonne les
+  modifications, `:q` refuse de quitter tant que ce n'est pas enregistré. Tant que
+  l'édition est ouverte, toute saisie est une sous-commande nano — prompt dédié
+  `[nano fichier]` — comme un vrai éditeur plein écran qui monopolise le terminal.
+  Ouverture cohérente avec `cat` : dossier refusé, fichier protégé refusé (même
+  message). Débloque la classe de missions « corrige la config », « répare la
+  crontab », « commente la ligne fautive ». Ajouté au glossaire/`man`/`whatis`/
+  autocomplétion Tab/`help` (FR+EN). 8 tests dédiés (180 au total), zéro régression
+  sur les 172 existants. SW v41 → v42.
+- **`sudo` simulé** 🔑 — élévation ponctuelle vers root, suite logique directe des
+  permissions appliquées + comptes utilisateurs : `sudo COMMANDE` s'exécute avec
+  l'identité root (donc tous les droits) si le compte courant est dans le groupe
+  `sudo` (le joueur l'est par défaut ; sarah aussi, une fois `usermod -aG sudo sarah`
+  du scénario 12 appliqué), sinon refusé avec le vrai message « n'apparaît pas dans
+  le fichier sudoers ». Contrairement à `su`, c'est ponctuel : l'identité d'origine
+  revient juste après la commande — composé nativement avec les pipes
+  (`sudo cat /etc/shadow | wc -l`) et les scripts, comme un vrai sudo. Le easter egg
+  `sudo make me a sandwich` (xkcd 149) est préservé. Ajouté au glossaire/`man`/
+  `whatis`/autocomplétion Tab/`help` (FR+EN). 6 tests dédiés (172 au total), zéro
+  régression sur les 166 existants. SW v40 → v41.
 - **Les permissions sont désormais réellement appliquées** 🔒 — jusqu'ici, `chmod` ne
   changeait que l'affichage de `ls -l` ; maintenant le simulateur fait respecter les
   droits : lire le fichier d'un autre utilisateur sans droit de lecture échoue avec

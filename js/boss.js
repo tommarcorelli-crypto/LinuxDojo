@@ -487,10 +487,22 @@ class BossMode {
     this.inputEl   = opts.inputEl;
     this.runBtn    = opts.runBtn;
     this.fleeBtn   = opts.fleeBtn;
+    this.rushPanelEl  = opts.rushPanelEl;
+    this.rushRecordEl = opts.rushRecordEl;
+    this.rushStartBtn = opts.rushStartBtn;
+    this.rushBadgeEl  = opts.rushBadgeEl;
 
     this.SAVE      = "linuxdojo_boss";
     const saved    = this._load();
     this.defeated  = new Set(saved.defeated || []);
+
+    this.RUSH_SAVE = "linuxdojo_bossrush_best";
+    this.rushBest  = this._loadRushBest();
+    this.rush        = false;   // combat en cours d'enchaînement Boss Rush
+    this.rushOrder   = [];
+    this.rushIdx     = 0;
+    this.rushStartTs = 0;
+    this.rushInterval = null;
 
     this.boss      = null;    // boss en cours
     this.phaseIdx  = 0;
@@ -509,10 +521,18 @@ class BossMode {
   _load() { try { return JSON.parse(localStorage.getItem(this.SAVE)) || {}; } catch { return {}; } }
   _save() { try { localStorage.setItem(this.SAVE, JSON.stringify({ defeated: [...this.defeated] })); } catch {} }
 
+  _loadRushBest() { try { const v = parseInt(localStorage.getItem(this.RUSH_SAVE)); return v > 0 ? v : null; } catch { return null; } }
+  _saveRushBest(ms) { try { localStorage.setItem(this.RUSH_SAVE, String(ms)); } catch {} }
+  _fmtRushTime(ms) {
+    const s = Math.floor(ms / 1000);
+    return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+
   defeatedCount() { return this.defeated.size; }
 
   init() {
     this.renderList();
+    this.renderRushPanel();
     this._showIdle();
   }
 
@@ -524,6 +544,42 @@ class BossMode {
     });
     this.hintBtn.addEventListener("click", () => this._showHint());
     if (this.fleeBtn) this.fleeBtn.addEventListener("click", () => this._flee());
+    if (this.rushStartBtn) this.rushStartBtn.addEventListener("click", () => this.startRush());
+  }
+
+  renderRushPanel() {
+    if (!this.rushPanelEl) return;
+    const unlocked = this.defeatedCount() >= BOSS_FIGHTS.length;
+    this.rushPanelEl.classList.toggle("locked", !unlocked);
+    if (this.rushStartBtn) this.rushStartBtn.disabled = !unlocked;
+    if (this.rushRecordEl) {
+      this.rushRecordEl.textContent = !unlocked
+        ? t("bossrush.locked", { n: BOSS_FIGHTS.length })
+        : (this.rushBest != null ? t("bossrush.record", { time: this._fmtRushTime(this.rushBest) }) : t("bossrush.noRecord"));
+    }
+  }
+
+  _updateRushBadge() {
+    if (!this.rushBadgeEl) return;
+    if (!this.rush) { this.rushBadgeEl.style.display = "none"; return; }
+    this.rushBadgeEl.style.display = "";
+    const elapsed = Date.now() - this.rushStartTs;
+    this.rushBadgeEl.textContent = `🏆 ${this.rushIdx + 1}/${this.rushOrder.length} · ${this._fmtRushTime(elapsed)}`;
+  }
+
+  startRush() {
+    if (this.defeatedCount() < BOSS_FIGHTS.length) return;
+    if (this.timer) clearInterval(this.timer);
+    if (this.rushInterval) clearInterval(this.rushInterval);
+    this.rush = true;
+    this.rushOrder = BOSS_FIGHTS.map(b => b.id);
+    this.rushIdx = 0;
+    this.hearts = 3;
+    this.rushStartTs = Date.now();
+    this._updateHearts();
+    this._updateRushBadge();
+    this.rushInterval = setInterval(() => this._updateRushBadge(), 500);
+    this.startFight(this.rushOrder[0], true);
   }
 
   renderList() {
@@ -568,14 +624,20 @@ class BossMode {
     this.term.printInfo(t("boss.idleTerm"));
   }
 
-  startFight(id) {
+  startFight(id, rushContinue) {
     const b = BOSS_FIGHTS.find(x => x.id === id);
     if (!b) return;
     if (this.timer) clearInterval(this.timer);
+    if (!rushContinue && this.rush) {
+      // On quitte le Rush en choisissant un combat normal dans la liste
+      this.rush = false;
+      if (this.rushInterval) clearInterval(this.rushInterval);
+      this._updateRushBadge();
+    }
     this.boss = b;
     this.phaseIdx = 0;
     this.hp = b.hp;
-    this.hearts = 3;
+    if (!rushContinue) this.hearts = 3;
     this.over = false;
     this.arenaEl.classList.remove("boss-idle");
 
@@ -690,7 +752,7 @@ class BossMode {
       this.term.printInfo(t("boss.alreadyDone"));
     }
     this.term.printOut("");
-    this.term.printInfo(t("boss.chooseOther"));
+    if (!this.rush) this.term.printInfo(t("boss.chooseOther"));
 
     if (typeof showAchievement === "function") {
       showAchievement(b.emoji, t("boss.achDefeated", { name: b.name }), first ? "+" + b.xp + " XP" : t("boss.achAgain"));
@@ -711,7 +773,42 @@ class BossMode {
     }
     if (typeof checkBadges === "function") checkBadges();
     if (typeof objectivesTick === "function") objectivesTick();
+
+    if (this.rush) {
+      this.rushIdx++;
+      if (this.rushIdx < this.rushOrder.length) {
+        this.term.printOut("");
+        this.term.printInfo(t("bossrush.next", { n: this.rushIdx + 1, total: this.rushOrder.length }));
+        this._updateRushBadge();
+        setTimeout(() => this.startFight(this.rushOrder[this.rushIdx], true), 1800);
+      } else {
+        this._rushVictory();
+      }
+    } else {
+      this.renderRushPanel();
+    }
     this.renderList();
+  }
+
+  _rushVictory() {
+    const elapsed = Date.now() - this.rushStartTs;
+    if (this.rushInterval) clearInterval(this.rushInterval);
+    const isRecord = this.rushBest == null || elapsed < this.rushBest;
+    if (isRecord) { this.rushBest = elapsed; this._saveRushBest(elapsed); }
+    this.rush = false;
+    this._updateRushBadge();
+    this.renderRushPanel();
+
+    this.term.printOut("");
+    this.term.printOk(t("bossrush.complete", { time: this._fmtRushTime(elapsed) }));
+    if (isRecord) this.term.printOk(t("bossrush.newRecord"));
+    if (typeof trackEvent === "function") trackEvent("bossrush-complete");
+    if (typeof showAchievement === "function") showAchievement("🏆", t("bossrush.achTitle"), this._fmtRushTime(elapsed));
+    if (typeof burstParticles === "function") {
+      burstParticles(window.innerWidth/2, window.innerHeight/2);
+      setTimeout(() => burstParticles(window.innerWidth/3, window.innerHeight*2/3), 250);
+      setTimeout(() => burstParticles(window.innerWidth*2/3, window.innerHeight*2/3), 500);
+    }
   }
 
   _loseHeart() {
@@ -751,6 +848,24 @@ class BossMode {
     this.term.printOut(t("boss.koTaunt"));
     this.term.printOut("");
 
+    if (this.rush) {
+      if (this.rushInterval) clearInterval(this.rushInterval);
+      this.term.printErr(t("bossrush.failed", { n: this.rushIdx + 1, total: this.rushOrder.length }));
+      this.rush = false;
+      this._updateRushBadge();
+      this.renderRushPanel();
+
+      const retryRush = document.createElement("button");
+      retryRush.className = "btn-primary";
+      retryRush.textContent = t("bossrush.retry");
+      retryRush.style.margin = "8px 0";
+      retryRush.addEventListener("click", () => this.startRush());
+      this.termEl.appendChild(retryRush);
+      this.termEl.scrollTop = this.termEl.scrollHeight;
+      if (typeof SFX !== "undefined") SFX.glitch();
+      return;
+    }
+
     const retry = document.createElement("button");
     retry.className = "btn-primary";
     retry.textContent = t("boss.retry");
@@ -764,6 +879,12 @@ class BossMode {
 
   _flee() {
     if (this.timer) clearInterval(this.timer);
+    if (this.rush) {
+      if (this.rushInterval) clearInterval(this.rushInterval);
+      this.rush = false;
+      this._updateRushBadge();
+      this.renderRushPanel();
+    }
     this.boss = null;
     this.over = false;
     this._showIdle();
@@ -797,6 +918,7 @@ class BossMode {
     const b = this.boss;
     const pct = b ? (this.hp / b.hp) * 100 : 0;
     this.hpFill.style.width = pct + "%";
+    this.hpFill.classList.toggle("hp-low", !!b && pct > 0 && pct <= 25);
     this.hpText.textContent = b ? this.hp + " / " + b.hp + " HP" : "";
   }
 

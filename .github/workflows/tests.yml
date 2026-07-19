@@ -23,3 +23,7 @@ jobs:
         run: node tests/i18n.test.js
       - name: Lancer les tests de traduction des scénarios (levels EN)
         run: node tests/levels-i18n.test.js
+      - name: Lancer les tests du mode Boss Rush
+        run: node tests/boss.test.js
+      - name: Lancer les tests des nouveaux défis chrono (admin/réseau)
+        run: node tests/challenges.test.js

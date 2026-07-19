@@ -626,6 +626,145 @@ test("id NOM détaille un compte créé ; les comptes sont réinitialisés par l
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+// NANO (mini-éditeur : ouverture, édition ligne par ligne, ^O/^X)
+// ═══════════════════════════════════════════════════════════════════════
+
+test("nano ouvre un fichier existant et affiche son contenu numéroté", () => {
+  const t = makeTerm({ "conf.txt": { type: "file", content: "listen 80;\nserver_name x;" } });
+  const r = t.run("nano conf.txt");
+  assertEqual(r.error, false);
+  assertIncludes(r.output, "listen 80;");
+  assertIncludes(r.output, "1 │");
+  assertEqual(t.state.nanoOpen, "conf.txt");
+});
+
+test("nano sur un fichier absent crée un nouveau buffer vide", () => {
+  const t = makeTerm({});
+  const r = t.run("nano nouveau.txt");
+  assertEqual(r.error, false);
+  assertIncludes(r.output, "Nouveau fichier");
+});
+
+test("nano refuse un dossier et un fichier protégé (cohérent avec cat)", () => {
+  const t = makeTerm({ "secret.txt": { type: "file", perms: "-rw-------", owner: "root", content: "x" } });
+  assertEqual(t.run("nano .").error, true);
+  const r = t.run("nano secret.txt");
+  assertEqual(r.error, true);
+  assertIncludes(r.output, "Permission non accordée");
+});
+
+test(":N remplace une ligne, :a ajoute, :d supprime, ^X enregistre et quitte", () => {
+  const t = makeTerm({ "f.txt": { type: "file", content: "un\ndeux\ntrois" } });
+  t.run("nano f.txt");
+  t.run(":2 DEUX");
+  t.run(":a quatre");
+  t.run(":d 1");
+  const closed = t.run("^X");
+  assertEqual(closed.error, false);
+  assertIncludes(closed.output, "Écrit");
+  const r = t.run("cat f.txt");
+  assertEqual(r.output, "DEUX\ntrois\nquatre", "le fichier doit refléter les 3 éditions, dans l'ordre");
+});
+
+test("^O enregistre SANS quitter (l'édition continue)", () => {
+  const t = makeTerm({ "f.txt": { type: "file", content: "a" } });
+  t.run("nano f.txt");
+  t.run(":1 b");
+  const saved = t.run("^O");
+  assertEqual(saved.error, false);
+  assertEqual(t.fs[t._resolve("f.txt")].content, "b", "^O doit avoir déjà écrit sur disque, sans quitter");
+  const r2 = t.run(":p");
+  assertIncludes(r2.output, "b", "l'édition doit continuer après ^O (le buffer reste ouvert)");
+  t.run("^X");
+  assertEqual(t.run("cat f.txt").output, "b", "toujours là après être vraiment sorti de nano");
+});
+
+test(":q refuse de quitter si modifié ; :q! abandonne les modifications", () => {
+  const t = makeTerm({ "f.txt": { type: "file", content: "a" } });
+  t.run("nano f.txt");
+  t.run(":1 b");
+  const ko = t.run(":q");
+  assertEqual(ko.error, true, ":q doit refuser tant que ce n'est pas enregistré");
+  t.run(":q!");
+  assertEqual(t.run("cat f.txt").output, "a", "l'abandon ne doit rien avoir écrit");
+});
+
+test(":i insère une ligne avant N ; ligne inexistante renvoie une erreur", () => {
+  const t = makeTerm({ "f.txt": { type: "file", content: "un\ntrois" } });
+  t.run("nano f.txt");
+  t.run(":i 2 deux");
+  t.run("^X");
+  assertEqual(t.run("cat f.txt").output, "un\ndeux\ntrois");
+  t.run("nano f.txt");
+  const bad = t.run(":9 x");
+  assertEqual(bad.error, true);
+  t.run(":q!");
+});
+
+test("le mode nano intercepte l'entrée : le prompt change et les commandes shell normales sont neutralisées", () => {
+  const t = makeTerm({ "f.txt": { type: "file", content: "a" } });
+  t.run("nano f.txt");
+  assertMatches(t.promptStr(), /nano/);
+  const r = t.run("ls"); // tapé PENDANT l'édition : traité comme une sous-commande nano, pas comme ls
+  assertEqual(r.error, true, "« ls » n'est pas une commande nano reconnue");
+  t.run(":q!");
+  assertMatches(t.promptStr(), /\$$/, "le prompt normal doit revenir après avoir quitté");
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// SUDO (élévation ponctuelle vers root)
+// ═══════════════════════════════════════════════════════════════════════
+
+test("sudo débloque la lecture d'un fichier protégé pour un compte du groupe sudo", () => {
+  const t = makeTerm({}, { system: true });
+  assertEqual(t.run("cat /etc/shadow").error, true, "sans sudo, shadow reste protégé");
+  const r = t.run("sudo cat /etc/shadow");
+  assertEqual(r.error, false, "user est dans le groupe sudo par défaut (usermod -aG sudo user)");
+  assertIncludes(r.output, "root:");
+});
+
+test("sudo est refusé à un compte hors du groupe sudo (vrai message sudoers)", () => {
+  const t = makeTerm({});
+  runSeq(t, "useradd -m sarah && passwd sarah && su sarah");
+  const r = t.run("sudo whoami");
+  assertEqual(r.error, true, "sarah n'est pas dans le groupe sudo");
+  assertIncludes(r.output, "sudoers");
+  assertEqual(t.state.sudoDenied, "sarah");
+});
+
+test("sudo fonctionne dès que le compte rejoint le groupe sudo (usermod -aG)", () => {
+  const t = makeTerm({});
+  runSeq(t, "useradd -m sarah && passwd sarah && usermod -aG sudo sarah && su sarah");
+  const r = t.run("sudo whoami");
+  assertEqual(r.error, false);
+  assertEqual(r.output, "root", "sous sudo, la commande s'exécute en tant que root");
+});
+
+test("sudo est ponctuel : l'identité revient juste après (contrairement à su)", () => {
+  const t = makeTerm({});
+  t.run("sudo whoami");
+  assertEqual(t.run("whoami").output, "user", "sudo ne doit pas changer l'utilisateur durablement");
+  assertEqual(t.state.sudo, "whoami");
+});
+
+test("sudo compose avec les pipes (sudo cat | wc -l)", () => {
+  const t = makeTerm({}, { system: true });
+  const r = t.run("sudo cat /etc/shadow | wc -l");
+  assertEqual(r.error, false);
+  assert(/^\d+$/.test(r.output.trim()), "wc -l doit recevoir la sortie de sudo cat");
+});
+
+test("sudo sans argument affiche l'usage ; sudo make me a sandwich reste un easter egg", () => {
+  const t = makeTerm({});
+  const ko = t.run("sudo");
+  assertEqual(ko.error, true);
+  assertIncludes(ko.output, "usage");
+  const sandwich = t.run("sudo make me a sandwich");
+  assertEqual(sandwich.error, false);
+  assertIncludes(sandwich.output, "🥪");
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 // CRON (crontab -l / -r / fichier)
 // ═══════════════════════════════════════════════════════════════════════
 
